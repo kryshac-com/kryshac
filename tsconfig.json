@@ -11,6 +11,10 @@
       "@kryshac/forms": [
         "dist/forms/forms",
         "dist/forms"
+      ],
+      "@kryshac/autocomplete": [
+        "dist/autocomplete/autocomplete",
+        "dist/autocomplete"
       ]
     },
     "noPropertyAccessFromIndexSignature": true,

@@ -5,6 +5,10 @@ const routes: Routes = [
   {
     path: 'wrapped-form-control',
     loadChildren: () => import('./wrapped-form-control').then(m => m.WrappedFormControlModule),
+  },
+  {
+    path: 'autocomplete',
+    loadChildren: () => import('./demo-autocomplete').then(m => m.DemoAutocompleteModule),
   }
 ];
 
