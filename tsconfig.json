@@ -15,6 +15,10 @@
       "@kryshac/autocomplete": [
         "dist/autocomplete/autocomplete",
         "dist/autocomplete"
+      ],
+      "selection": [
+        "dist/selection/selection",
+        "dist/selection"
       ]
     },
     "noPropertyAccessFromIndexSignature": true,

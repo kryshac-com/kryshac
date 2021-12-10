@@ -1,8 +1,13 @@
 import { coerceBooleanProperty } from '@angular/cdk/coercion';
-import { ChangeDetectionStrategy, Component, forwardRef, Input, TemplateRef, ViewChild, ViewContainerRef, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ContentChild, forwardRef, Inject, Input, OnInit, TemplateRef, ViewChild, ViewContainerRef, ViewEncapsulation } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { CdkConnectedOverlay, Overlay, OverlayRef, ScrollStrategy } from '@angular/cdk/overlay';
+import { Overlay, OverlayRef } from '@angular/cdk/overlay';
 import { TemplatePortal } from '@angular/cdk/portal';
+import { Observable } from 'rxjs';
+import { Option } from './types';
+import { KCOptionsDirective, KCOptionDirective, ValueDirective } from './directives';
+import { SELECTION } from './tokens';
+import { SelectionModel } from 'dist/selection-model';
 
 @Component({
   selector: 'autocomplete',
@@ -13,12 +18,29 @@ import { TemplatePortal } from '@angular/cdk/portal';
       provide: NG_VALUE_ACCESSOR,
       useExisting: forwardRef(() => AutocompleteComponent),
       multi: true,
+    },
+    {
+      provide: SELECTION,
+      useFactory: (autocomplete: AutocompleteComponent) => autocomplete.selectionModel,
+      deps: [forwardRef(() => AutocompleteComponent)],
     }
   ],
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AutocompleteComponent implements ControlValueAccessor {
+export class AutocompleteComponent implements OnInit, ControlValueAccessor {
+  @Input() options!: Observable<Option[]> | Option[];
+  /**
+   * allow user to open selection in modal
+   */
+  @Input()
+  get multiple(): boolean {
+    return this._multiple;
+  }
+  set multiple(value: boolean | string) {
+    this._multiple = coerceBooleanProperty(value);
+  }
+  private _multiple = false;
   /**
    * allow user to open selection in modal
    */
@@ -33,7 +55,11 @@ export class AutocompleteComponent implements ControlValueAccessor {
   /**
    * get the template for the overlay that contains ng-content
    */
+  @ViewChild('valueRef', { static: true, read: ViewContainerRef }) private _valueRef!: ViewContainerRef;
   @ViewChild('templateRef') templateRef!: TemplateRef<unknown>;
+  @ContentChild(ValueDirective, { static: true }) valueTemplate!: ValueDirective;
+  @ContentChild(KCOptionsDirective, { static: true }) public optionsTemplate!: KCOptionsDirective;
+
 
   set value(val: string) {
     this._value = val;
@@ -54,13 +80,23 @@ export class AutocompleteComponent implements ControlValueAccessor {
    */
   selectionOpened: boolean = false;
 
+  selectionModel!: SelectionModel<{value: number}>;
+
   private _dialogOverlayRef: OverlayRef | undefined;
+
 
   constructor(
     private _overlay: Overlay,
     private _viewContainerRef: ViewContainerRef,
   ) {
     this._value = '';
+  }
+
+  ngOnInit(): void {
+    this.selectionModel = new SelectionModel(undefined, this.multiple);
+
+    const temp = this.valueTemplate.template.createEmbeddedView({});
+    this._valueRef.insert(temp);
   }
 
   writeValue(obj: any): void {

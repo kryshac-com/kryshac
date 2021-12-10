@@ -1,7 +1,37 @@
-<autocomplete [formControl]="control">
-  <div class="test-overlay">test</div>
+<autocomplete [formControl]="control" [options]="(options | async)!">
+  <value *value></value>
+
+  <kc-options *kcOptions="let options" [options]="options">
+    <input [formControl]="search" type="text">
+    <kc-option *kcOption="let option" [option]="option"></kc-option>
+  </kc-options>
 </autocomplete>
 
-<autocomplete [formControl]="control" dialog>
-  <div class="test-overlay">dialog</div>
+<autocomplete [formControl]="control"  [options]="(options | async)!" dialog>
+  <ng-template value>
+    <value></value>
+  </ng-template>
+
+  <ng-template kcOptions let-options>
+    <kc-options [options]="options">
+
+    <input [formControl]="search" type="text">
+
+    <ng-template kcOption let-option>
+      <kc-option [option]="option"></kc-option>
+    </ng-template>
+
+    </kc-options>
+  </ng-template>
+</autocomplete>
+
+
+<autocomplete [formControl]="control" [options]="(options | async)!" dialog>
+  <value *value></value>
+
+  <kc-options *kcOptions="let options" [options]="options">
+    <pre>{{ options | json }}</pre>
+    <input [formControl]="search" type="text">
+    <kc-option *kcOption="let option" [option]="option"></kc-option>
+  </kc-options>
 </autocomplete>

@@ -1,12 +1,12 @@
-<div cdk-overlay-origin #origin="cdkOverlayOrigin" #trigger (click)="open()">
+<div cdk-overlay-origin #origin="cdkOverlayOrigin" (click)="open()">
   <span *ngIf="!value; else valueRef">Place holder</span>
   <ng-template #valueRef>
     <span>{{ value }}</span>
   </ng-template>
 
+
   <ng-template
     #templateRef
-    #overlayRef="cdkConnectedOverlay"
     cdk-connected-overlay
     cdkConnectedOverlayLockPosition
     [cdkConnectedOverlayOrigin]="origin"
@@ -15,14 +15,6 @@
     cdkConnectedOverlayBackdropClass="cdk-overlay-transparent-backdrop"
     (backdropClick)="close()"
   >
-    <ng-content></ng-content>
+  <lib-wrap-dialog-options [options]="options" [optionsTemplate]="optionsTemplate"></lib-wrap-dialog-options>
   </ng-template>
 </div>
-
-
-
-    <!-- [cdkConnectedOverlayScrollStrategy]="scrollStrategy"
-    [cdkConnectedOverlayMinWidth]="triggerRec?.width || 0"
-    (backdropClick)="close()"
-    (attach)="_onAttached()"
-    (detach)="close()" -->

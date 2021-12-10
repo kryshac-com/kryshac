@@ -167,6 +167,37 @@
           }
         }
       }
+    },
+    "selection-model": {
+      "projectType": "library",
+      "root": "projects/selection-model",
+      "sourceRoot": "projects/selection-model/src",
+      "prefix": "lib",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "options": {
+            "project": "projects/selection-model/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/selection-model/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/selection-model/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "projects/selection-model/src/test.ts",
+            "tsConfig": "projects/selection-model/tsconfig.spec.json",
+            "karmaConfig": "projects/selection-model/karma.conf.js"
+          }
+        }
+      }
     }
   },
   "defaultProject": "forms"
