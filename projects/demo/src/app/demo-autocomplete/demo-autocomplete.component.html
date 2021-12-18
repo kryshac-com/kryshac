@@ -1,5 +1,7 @@
-<autocomplete [formControl]="control" [options]="(options | async)!">
-  <value *value></value>
+<autocomplete [formControl]="control" [options]="(simpleOptions | async)!">
+  <value *value>
+    <input [formControl]="search" type="text">
+  </value>
 
   <kc-options *kcOptions="let options" [options]="options">
     <input [formControl]="search" type="text">
@@ -7,6 +9,54 @@
   </kc-options>
 </autocomplete>
 
+<autocomplete [formControl]="control" [options]="(options | async)!">
+  <value *value>
+    <input [formControl]="search" type="text">
+  </value>
+
+  <kc-options-group *kcOptions key="locations">
+    <input [formControl]="search" type="text">
+    <kc-option *kcOption="let option" [option]="option"></kc-option>
+  </kc-options-group>
+
+  <kc-options-group *kcOptions key="waiters" multiple>
+    <input [formControl]="search" type="text">
+    <kc-option *kcOption="let option" [option]="option"></kc-option>
+  </kc-options-group>
+</autocomplete>
+
+<autocomplete [formControl]="control" [options]="options">
+  <value *value>
+    <input [formControl]="search" type="text">
+  </value>
+
+  <kc-options-group *kcOptions key="locations">
+    <input [formControl]="search" type="text">
+    <kc-option *kcOption="let option" [option]="option"></kc-option>
+  </kc-options-group>
+
+  <kc-options-group *kcOptions key="waiters" multiple>
+    <input [formControl]="search" type="text">
+    <kc-option *kcOption="let option" [option]="option"></kc-option>
+  </kc-options-group>
+</autocomplete>
+
+<autocomplete [formControl]="control" [options]="(options | async)!" multiple>
+  <value *value>
+    <input [formControl]="search" type="text">
+  </value>
+
+  <kc-options-group *kcOptions key="locations">
+    <input [formControl]="search" type="text">
+    <kc-option *kcOption="let option" [option]="option"></kc-option>
+  </kc-options-group>
+
+  <kc-options-group *kcOptions key="waiters" multiple>
+    <input [formControl]="search" type="text">
+    <kc-option *kcOption="let option" [option]="option"></kc-option>
+  </kc-options-group>
+</autocomplete>
+<!--
 <autocomplete [formControl]="control"  [options]="(options | async)!" dialog>
   <ng-template value>
     <value></value>
@@ -27,11 +77,14 @@
 
 
 <autocomplete [formControl]="control" [options]="(options | async)!" dialog>
-  <value *value></value>
+  <value *value>
+    <input [formControl]="search" type="text">
+  </value>
 
   <kc-options *kcOptions="let options" [options]="options">
-    <pre>{{ options | json }}</pre>
+    <value></value>
+
     <input [formControl]="search" type="text">
     <kc-option *kcOption="let option" [option]="option"></kc-option>
   </kc-options>
-</autocomplete>
+</autocomplete> -->

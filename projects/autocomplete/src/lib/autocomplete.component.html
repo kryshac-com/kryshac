@@ -1,8 +1,11 @@
 <div cdk-overlay-origin #origin="cdkOverlayOrigin" (click)="open()">
   <span *ngIf="!value; else valueRef">Place holder</span>
+
   <ng-template #valueRef>
     <span>{{ value }}</span>
   </ng-template>
+
+  <ng-content></ng-content>
 
 
   <ng-template
@@ -11,9 +14,7 @@
     cdkConnectedOverlayLockPosition
     [cdkConnectedOverlayOrigin]="origin"
     [cdkConnectedOverlayOpen]="panelOpen"
-    cdkConnectedOverlayHasBackdrop
-    cdkConnectedOverlayBackdropClass="cdk-overlay-transparent-backdrop"
-    (backdropClick)="close()"
+    (overlayOutsideClick)="close($event)"
   >
   <lib-wrap-dialog-options [options]="options" [optionsTemplate]="optionsTemplate"></lib-wrap-dialog-options>
   </ng-template>

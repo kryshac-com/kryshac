@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { AutocompleteComponent } from './autocomplete.component';
 import { OverlayModule } from '@angular/cdk/overlay';
-import { KCOptionsComponent, KCOptionComponent, ValueComponent, WrapDialogOptionsComponent } from './components';
+import { KCOptionsComponent, KCOptionComponent, ValueComponent, WrapDialogOptionsComponent, OptionsGroupComponent } from './components';
 import { KCOptionsDirective, KCOptionDirective, ValueDirective } from './directives';
 
 @NgModule({
@@ -15,6 +15,7 @@ import { KCOptionsDirective, KCOptionDirective, ValueDirective } from './directi
     KCOptionsComponent,
     KCOptionsDirective,
     WrapDialogOptionsComponent,
+    OptionsGroupComponent,
   ],
   imports: [
     CommonModule,
@@ -28,6 +29,7 @@ import { KCOptionsDirective, KCOptionDirective, ValueDirective } from './directi
     KCOptionDirective,
     KCOptionsComponent,
     KCOptionsDirective,
+OptionsGroupComponent,
   ]
 })
 export class AutocompleteModule { }

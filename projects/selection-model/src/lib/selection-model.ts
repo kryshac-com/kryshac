@@ -57,6 +57,12 @@ export class SelectionModel<T extends { value: unknown; key?: unknown }> {
     this._verifyValueAssignment(values);
     values.forEach((value) => this._selection.set(value.key || value.value, value));
     this._emitChangeEvent();
+
+    this.changed.next({
+      source: this,
+        added: this._selectedToEmit,
+        removed: this._deselectedToEmit,
+    })
   }
 
   /**
@@ -90,6 +96,12 @@ export class SelectionModel<T extends { value: unknown; key?: unknown }> {
   clear(): void {
     this._unMarkAll();
     this._emitChangeEvent();
+  }
+  /**
+   * Determines whether a value is selected.
+   */
+  get(value: T): T | undefined {
+    return this._selection.get(value.key || value.value);
   }
   /**
    * Determines whether a value is selected.

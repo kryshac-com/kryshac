@@ -8,18 +8,18 @@ import { SELECTION } from '../../tokens';
   styleUrls: ['./kc-option.component.scss']
 })
 export class KCOptionComponent implements OnInit {
-  @Input() option!: string;
+  @Input() option!: any;
 
   constructor(
     @Inject(SELECTION) private _selection: SelectionModel<unknown>,
-  ) {
-  }
+  ) { }
 
   get selected(): boolean {
     return this._selection.isSelected(this.option);
   }
 
   ngOnInit(): void {
+    console.log('option', this.option);
   }
 
   click(): void {

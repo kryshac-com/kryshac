@@ -1,12 +1,12 @@
 import { coerceBooleanProperty } from '@angular/cdk/coercion';
-import { ChangeDetectionStrategy, Component, ContentChild, forwardRef, Inject, Input, OnInit, TemplateRef, ViewChild, ViewContainerRef, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ContentChild, ContentChildren, forwardRef, Inject, Input, OnInit, Query, QueryList, TemplateRef, ViewChild, ViewContainerRef, ViewEncapsulation } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { Overlay, OverlayRef } from '@angular/cdk/overlay';
 import { TemplatePortal } from '@angular/cdk/portal';
-import { Observable } from 'rxjs';
-import { Option } from './types';
-import { KCOptionsDirective, KCOptionDirective, ValueDirective } from './directives';
-import { SELECTION } from './tokens';
+import { isObservable, Observable, ReplaySubject, tap } from 'rxjs';
+import { Options } from './types';
+import { KCOptionsDirective, ValueDirective } from './directives';
+import { OPTIONS, SELECTION } from './tokens';
 import { SelectionModel } from 'dist/selection-model';
 
 @Component({
@@ -20,6 +20,11 @@ import { SelectionModel } from 'dist/selection-model';
       multi: true,
     },
     {
+      provide: OPTIONS,
+      useFactory: (autocomplete: AutocompleteComponent) => autocomplete.options,
+      deps: [forwardRef(() => AutocompleteComponent)],
+    },
+    {
       provide: SELECTION,
       useFactory: (autocomplete: AutocompleteComponent) => autocomplete.selectionModel,
       deps: [forwardRef(() => AutocompleteComponent)],
@@ -29,7 +34,24 @@ import { SelectionModel } from 'dist/selection-model';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AutocompleteComponent implements OnInit, ControlValueAccessor {
-  @Input() options!: Observable<Option[]> | Option[];
+  @Input()
+  get options(): Observable<Options> {
+    return this._options.pipe(
+      tap((value) => this._isOptionsObject = !Array.isArray(value))
+    );
+  }
+  set options(options: Observable<Options> | Options) {
+    if (isObservable(options))
+      this._options = options;
+    else
+      this._createObservableOptions(options);
+  }
+  private _options!: Observable<Options>;
+  private _optionsCache: ReplaySubject<Options> | undefined;
+
+
+  private _isOptionsObject: boolean = false;
+
   /**
    * allow user to open selection in modal
    */
@@ -58,7 +80,7 @@ export class AutocompleteComponent implements OnInit, ControlValueAccessor {
   @ViewChild('valueRef', { static: true, read: ViewContainerRef }) private _valueRef!: ViewContainerRef;
   @ViewChild('templateRef') templateRef!: TemplateRef<unknown>;
   @ContentChild(ValueDirective, { static: true }) valueTemplate!: ValueDirective;
-  @ContentChild(KCOptionsDirective, { static: true }) public optionsTemplate!: KCOptionsDirective;
+  @ContentChildren(KCOptionsDirective) public optionsTemplate!: QueryList<KCOptionsDirective>;
 
 
   set value(val: string) {
@@ -80,7 +102,7 @@ export class AutocompleteComponent implements OnInit, ControlValueAccessor {
    */
   selectionOpened: boolean = false;
 
-  selectionModel!: SelectionModel<{value: number}>;
+  selectionModel!: SelectionModel<{ key: string; value: SelectionModel<{label: string; value: string}>}>;
 
   private _dialogOverlayRef: OverlayRef | undefined;
 
@@ -94,6 +116,8 @@ export class AutocompleteComponent implements OnInit, ControlValueAccessor {
 
   ngOnInit(): void {
     this.selectionModel = new SelectionModel(undefined, this.multiple);
+
+    // this.selectionModel.changed.subscribe((value) => console.log(value));
 
     const temp = this.valueTemplate.template.createEmbeddedView({});
     this._valueRef.insert(temp);
@@ -118,11 +142,29 @@ export class AutocompleteComponent implements OnInit, ControlValueAccessor {
     this.selectionOpened = true;
   }
 
-  close(): void {
+  close(event: MouseEvent): void {
+    const element = event.target as HTMLElement;
+    // check if html element contains a angular directive
+    if (this.selectionOpened && element.hasAttribute('prevent-close')) return;
+
     if (this.dialog) this._closeDialog();
     else this.panelOpen = false;
 
     this.selectionOpened = false;
+
+    if (this._isOptionsObject) {
+      const test = this.selectionModel.selected.reduce<Record<string, unknown>>((acc, {key, value}) => {
+        const values = value.selected.map(({value}) => value);
+        acc[key] = values;
+
+        return acc;
+      }, {});
+
+      console.log('test', test);
+    } else {
+      const test = this.selectionModel.selected.map(({value}) => value);
+      console.log('test', test);
+    }
   }
 
   private _openDialog(): void {
@@ -140,11 +182,20 @@ export class AutocompleteComponent implements OnInit, ControlValueAccessor {
     overlayRef.attach(dialogPortal);
 
     this._dialogOverlayRef = overlayRef;
-    overlayRef.backdropClick().subscribe(() => this.close());
+    overlayRef.backdropClick().subscribe((event) => this.close(event));
   }
 
   private _closeDialog(): void {
     this._dialogOverlayRef!.dispose();
     this._dialogOverlayRef = undefined;
+  }
+
+  private _createObservableOptions(options: Options): void {
+    if (!this._optionsCache) {
+      this._optionsCache = new ReplaySubject()
+      this._options = this._optionsCache;
+    }
+
+    this._optionsCache.next(options);
   }
 }

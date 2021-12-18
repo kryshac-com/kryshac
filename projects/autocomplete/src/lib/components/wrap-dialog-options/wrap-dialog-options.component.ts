@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, OnInit, SimpleChanges, ViewChild, ViewContainerRef } from '@angular/core';
+import { Component, Input, OnChanges, OnInit, QueryList, SimpleChanges, ViewChild, ViewContainerRef } from '@angular/core';
 import { KCOptionsDirective, KCOptionDirective } from '../../directives';
 
 @Component({
@@ -7,7 +7,7 @@ import { KCOptionsDirective, KCOptionDirective } from '../../directives';
   styleUrls: ['./wrap-dialog-options.component.scss']
 })
 export class WrapDialogOptionsComponent implements OnInit, OnChanges {
-  @Input() public optionsTemplate!: KCOptionsDirective;
+  @Input() public optionsTemplate!: QueryList<KCOptionsDirective>;
 
   @Input() public options!: unknown;
 
@@ -20,9 +20,12 @@ export class WrapDialogOptionsComponent implements OnInit, OnChanges {
   }
 
   ngOnInit(): void {
+    console.log('init warp');
     this._context = { $implicit: this.options };
 
-    const dialog = this.optionsTemplate.template.createEmbeddedView(this._context);
-    this._outlet.insert(dialog);
+    this.optionsTemplate.forEach(optionsTemplate => {
+      const dialog = optionsTemplate.template.createEmbeddedView(this._context);
+      this._outlet.insert(dialog);
+    });
   }
 }
