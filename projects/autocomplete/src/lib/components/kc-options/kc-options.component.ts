@@ -1,16 +1,15 @@
-import { AfterViewChecked, AfterViewInit, Component, ContentChild, Input, OnChanges, OnInit, SimpleChanges, ViewChild, ViewContainerRef } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Component, ContentChild, Input, OnInit, ViewChild, ViewContainerRef } from '@angular/core';
+
 import { KCOptionDirective } from '../../directives/option/option.directive';
 
 @Component({
   selector: 'kc-options',
   templateUrl: './kc-options.component.html',
-  styleUrls: ['./kc-options.component.scss']
+  styleUrls: ['./kc-options.component.scss'],
 })
-export class KCOptionsComponent implements OnInit, OnChanges, AfterViewInit, AfterViewChecked {
+export class KCOptionsComponent implements OnInit {
   // @Input() public optionTemplate!: KCOptionDirective;
-  @Input() public options!: Observable<unknown[]>;
-
+  @Input() public options!: unknown[];
 
   @ContentChild(KCOptionDirective, { static: true }) public optionTemplate!: KCOptionDirective;
   /**
@@ -18,25 +17,12 @@ export class KCOptionsComponent implements OnInit, OnChanges, AfterViewInit, Aft
    */
   @ViewChild('outlet', { static: true, read: ViewContainerRef }) private _outlet!: ViewContainerRef;
 
-  ngAfterViewInit(): void {
-  }
-
-  ngOnChanges(): void {
-  }
-
   ngOnInit(): void {
-    console.log(this.options);
+    this._outlet.clear();
 
-    this.options.subscribe((options) => {
-      this._outlet.clear();
-
-      options.forEach((option: unknown) => {
-        const dialog = this.optionTemplate.template.createEmbeddedView({ $implicit: option });
-        this._outlet.insert(dialog);
-      })
-    })
-  }
-
-  ngAfterViewChecked(): void {
+    this.options.forEach((option: unknown) => {
+      const dialog = this.optionTemplate.template.createEmbeddedView({ $implicit: option });
+      this._outlet.insert(dialog);
+    });
   }
 }

@@ -1,22 +1,14 @@
-import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { NgModule } from '@angular/core';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+
+import { AutocompleteModule } from '@kryshac/autocomplete';
 
 import { DemoAutocompleteRoutingModule } from './demo-autocomplete-routing.module';
 import { DemoAutocompleteComponent } from './demo-autocomplete.component';
-import { AutocompleteModule } from '@kryshac/autocomplete';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-
 
 @NgModule({
-  declarations: [
-    DemoAutocompleteComponent
-  ],
-  imports: [
-    CommonModule,
-    DemoAutocompleteRoutingModule,
-    FormsModule,
-    ReactiveFormsModule,
-    AutocompleteModule,
-  ]
+  declarations: [DemoAutocompleteComponent],
+  imports: [CommonModule, DemoAutocompleteRoutingModule, FormsModule, ReactiveFormsModule, AutocompleteModule],
 })
-export class DemoAutocompleteModule { }
+export class DemoAutocompleteModule {}

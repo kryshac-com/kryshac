@@ -1,9 +1,10 @@
+import { OverlayModule } from '@angular/cdk/overlay';
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
+
 import { AutocompleteComponent } from './autocomplete.component';
-import { OverlayModule } from '@angular/cdk/overlay';
-import { KCOptionsComponent, KCOptionComponent, ValueComponent, WrapDialogOptionsComponent, OptionsGroupComponent } from './components';
-import { KCOptionsDirective, KCOptionDirective, ValueDirective } from './directives';
+import { KCOptionComponent, KCOptionsComponent, OptionsGroupComponent, ValueComponent, WrapDialogOptionsComponent } from './components';
+import { KCOptionDirective, KCOptionsDirective, ValueDirective } from './directives';
 
 @NgModule({
   declarations: [

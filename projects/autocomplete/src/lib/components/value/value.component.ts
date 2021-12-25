@@ -1,7 +1,8 @@
-import { Component, HostBinding, Inject, Input, OnInit } from '@angular/core';
-import { SELECTION } from '../../tokens';
 import { SelectionModel } from '@angular/cdk/collections';
-import { map, Observable } from 'rxjs';
+import { Component, HostBinding, Inject, OnInit } from '@angular/core';
+import { Observable, map } from 'rxjs';
+
+import { SELECTION } from '../../tokens';
 
 @Component({
   selector: 'value',

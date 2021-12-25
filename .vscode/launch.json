@@ -1,0 +1,30 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "firefox",
+      "profile": "kryshac",
+      "request": "launch",
+      "reAttach": true,
+      "name": "Firefox",
+      "url": "http://localhost:4200",
+      "webRoot": "${workspaceFolder}",
+      "internalConsoleOptions": "openOnSessionStart",
+      "preLaunchTask": "npm: serve",
+      "pathMappings": [
+        {
+          "url": "webpack:///projects/app-dashboard/src",
+          "path": "${workspaceFolder}/projects/app-dashboard/src"
+        },
+        {
+          "url": "webpack:///dist/projects/lib-helpers",
+          "path": "${workspaceFolder}/projects/lib-helpers"
+        },
+        {
+          "url": "webpack:///dist/projects/lib-auth",
+          "path": "${workspaceFolder}/projects/lib-auth"
+        }
+      ]
+    }
+  ]
+}

@@ -1,25 +1,26 @@
-import { ChangeDetectionStrategy, Component, forwardRef, OnInit } from '@angular/core';
-import { NG_VALUE_ACCESSOR, ControlValueAccessor, FormBuilder, FormGroup } from '@angular/forms';
-import { provideValueAccessor, WrappedFormControl } from '@kryshac/forms';
+import { ChangeDetectionStrategy, Component, forwardRef } from '@angular/core';
+import { ControlValueAccessor, FormBuilder, FormGroup, NG_VALUE_ACCESSOR } from '@angular/forms';
+
+import { WrappedFormControl, provideValueAccessor } from '@kryshac/forms';
 
 @Component({
   selector: 'app-custom',
   template: `
-    <input [(ngModel)]="value"/>
+    <input [(ngModel)]="value" />
     <span>{{ value }}</span>
   `,
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
       useExisting: forwardRef(() => CustomComponent),
-      multi: true
+      multi: true,
     },
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CustomComponent implements ControlValueAccessor {
   onChange: any = () => {};
-  onTouch: any = () => {}
+  onTouch: any = () => {};
 
   private _value: any;
   set value(val: any) {
@@ -42,20 +43,20 @@ export class CustomComponent implements ControlValueAccessor {
 
 @Component({
   selector: 'app-wrapped-custom',
-  template: `<app-custom></app-custom>`,
-  providers: [
-    provideValueAccessor(WrappedCustomComponent),
-  ],
+  template: `
+    <app-custom></app-custom>
+  `,
+  providers: [provideValueAccessor(WrappedCustomComponent)],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class WrappedCustomComponent extends WrappedFormControl {}
 
 @Component({
   selector: 'app-wrapped-input',
-  template: `<input ngDefaultControl type="text" />`,
-  providers: [
-    provideValueAccessor(WrappedInputComponent),
-  ],
+  template: `
+    <input ngDefaultControl type="text" />
+  `,
+  providers: [provideValueAccessor(WrappedInputComponent)],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class WrappedInputComponent extends WrappedFormControl {}

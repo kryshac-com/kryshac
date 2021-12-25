@@ -7,7 +7,6 @@
 
   <ng-content></ng-content>
 
-
   <ng-template
     #templateRef
     cdk-connected-overlay
@@ -16,6 +15,6 @@
     [cdkConnectedOverlayOpen]="panelOpen"
     (overlayOutsideClick)="close($event)"
   >
-  <lib-wrap-dialog-options [options]="options" [optionsTemplate]="optionsTemplate"></lib-wrap-dialog-options>
+    <kc-wrap-dialog-options [options]="options | async" [optionsTemplate]="optionsTemplate"></kc-wrap-dialog-options>
   </ng-template>
 </div>

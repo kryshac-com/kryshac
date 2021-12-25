@@ -2,8 +2,8 @@ import { ChangeDetectionStrategy, Component, DebugElement, forwardRef } from '@a
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ControlValueAccessor, FormBuilder, FormGroup, FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
 import { By } from '@angular/platform-browser';
-import { provideValueAccessor } from './provide-value-accessor';
 
+import { provideValueAccessor } from './provide-value-accessor';
 import { WrappedFormControl } from './wrapped-form-control';
 
 @Component({

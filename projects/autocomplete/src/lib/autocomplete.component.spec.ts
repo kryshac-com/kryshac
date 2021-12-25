@@ -1,10 +1,10 @@
-import { ComponentFixture, inject, TestBed } from '@angular/core/testing';
-import { CdkOverlayOrigin, OverlayModule, OverlayContainer, Overlay } from '@angular/cdk/overlay';
+import { CdkOverlayOrigin, Overlay, OverlayContainer, OverlayModule } from '@angular/cdk/overlay';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ComponentFixture, TestBed, inject } from '@angular/core/testing';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { By } from '@angular/platform-browser';
 
 import { AutocompleteComponent } from './autocomplete.component';
-import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { By } from '@angular/platform-browser';
-import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 describe('AutocompleteComponent', () => {
   let component: AutocompleteComponent;

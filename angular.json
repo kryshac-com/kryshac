@@ -1,5 +1,8 @@
 {
   "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+  "cli": {
+    "defaultCollection": "@angular-eslint/schematics"
+  },
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
@@ -7,7 +10,7 @@
       "projectType": "library",
       "root": "projects/forms",
       "sourceRoot": "projects/forms/src",
-      "prefix": "lib",
+      "prefix": "kc",
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-angular:ng-packagr",
@@ -30,6 +33,15 @@
             "main": "projects/forms/src/test.ts",
             "tsConfig": "projects/forms/tsconfig.spec.json",
             "karmaConfig": "projects/forms/karma.conf.js"
+          }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "projects/forms/**/*.ts",
+              "projects/forms/**/*.html"
+            ]
           }
         }
       }
@@ -134,6 +146,15 @@
             ],
             "scripts": []
           }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "projects/demo/**/*.ts",
+              "projects/demo/**/*.html"
+            ]
+          }
         }
       }
     },
@@ -141,7 +162,7 @@
       "projectType": "library",
       "root": "projects/autocomplete",
       "sourceRoot": "projects/autocomplete/src",
-      "prefix": "lib",
+      "prefix": "kc",
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-angular:ng-packagr",
@@ -165,6 +186,15 @@
             "tsConfig": "projects/autocomplete/tsconfig.spec.json",
             "karmaConfig": "projects/autocomplete/karma.conf.js"
           }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "projects/autocomplete/**/*.ts",
+              "projects/autocomplete/**/*.html"
+            ]
+          }
         }
       }
     },
@@ -172,7 +202,7 @@
       "projectType": "library",
       "root": "projects/selection-model",
       "sourceRoot": "projects/selection-model/src",
-      "prefix": "lib",
+      "prefix": "kc",
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-angular:ng-packagr",
@@ -195,6 +225,15 @@
             "main": "projects/selection-model/src/test.ts",
             "tsConfig": "projects/selection-model/tsconfig.spec.json",
             "karmaConfig": "projects/selection-model/karma.conf.js"
+          }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "projects/selection-model/**/*.ts",
+              "projects/selection-model/**/*.html"
+            ]
           }
         }
       }

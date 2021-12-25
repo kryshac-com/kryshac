@@ -1,16 +1,33 @@
 import { coerceBooleanProperty } from '@angular/cdk/coercion';
-import { ChangeDetectionStrategy, Component, ContentChild, ContentChildren, forwardRef, Inject, Input, OnInit, Query, QueryList, TemplateRef, ViewChild, ViewContainerRef, ViewEncapsulation } from '@angular/core';
-import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { Overlay, OverlayRef } from '@angular/cdk/overlay';
 import { TemplatePortal } from '@angular/cdk/portal';
-import { isObservable, Observable, ReplaySubject, tap } from 'rxjs';
-import { Options } from './types';
-import { KCOptionsDirective, ValueDirective } from './directives';
-import { OPTIONS, SELECTION } from './tokens';
+import {
+  AfterContentInit,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  ContentChild,
+  ContentChildren,
+  Input,
+  OnInit,
+  QueryList,
+  TemplateRef,
+  ViewChild,
+  ViewContainerRef,
+  ViewEncapsulation,
+  forwardRef,
+} from '@angular/core';
+import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { Observable, ReplaySubject, Subject, isObservable, takeUntil } from 'rxjs';
+
 import { SelectionModel } from 'dist/selection-model';
 
+import { KCOptionsDirective, ValueDirective } from './directives';
+import { SELECTION } from './tokens';
+import { Option, OptionGroup, OptionObj, Options, getValues } from './types';
+
 @Component({
-  selector: 'autocomplete',
+  selector: 'kc-autocomplete',
   templateUrl: './autocomplete.component.html',
   styleUrls: ['./autocomplete.component.scss'],
   providers: [
@@ -20,37 +37,25 @@ import { SelectionModel } from 'dist/selection-model';
       multi: true,
     },
     {
-      provide: OPTIONS,
-      useFactory: (autocomplete: AutocompleteComponent) => autocomplete.options,
-      deps: [forwardRef(() => AutocompleteComponent)],
-    },
-    {
       provide: SELECTION,
       useFactory: (autocomplete: AutocompleteComponent) => autocomplete.selectionModel,
       deps: [forwardRef(() => AutocompleteComponent)],
-    }
+    },
   ],
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AutocompleteComponent implements OnInit, ControlValueAccessor {
+export class AutocompleteComponent implements OnInit, AfterContentInit, ControlValueAccessor {
   @Input()
-  get options(): Observable<Options> {
-    return this._options.pipe(
-      tap((value) => this._isOptionsObject = !Array.isArray(value))
-    );
+  get options(): Observable<Options | OptionGroup> {
+    return this._options;
   }
-  set options(options: Observable<Options> | Options) {
-    if (isObservable(options))
-      this._options = options;
-    else
-      this._createObservableOptions(options);
+  set options(options: Observable<Options | OptionGroup> | Options | OptionGroup) {
+    if (isObservable(options)) this._options = options;
+    else this._createObservableOptions(options);
   }
-  private _options!: Observable<Options>;
-  private _optionsCache: ReplaySubject<Options> | undefined;
-
-
-  private _isOptionsObject: boolean = false;
+  private _options!: Observable<Options | OptionGroup>;
+  private _optionsCache: ReplaySubject<Options | OptionGroup> | undefined;
 
   /**
    * allow user to open selection in modal
@@ -80,58 +85,63 @@ export class AutocompleteComponent implements OnInit, ControlValueAccessor {
   @ViewChild('valueRef', { static: true, read: ViewContainerRef }) private _valueRef!: ViewContainerRef;
   @ViewChild('templateRef') templateRef!: TemplateRef<unknown>;
   @ContentChild(ValueDirective, { static: true }) valueTemplate!: ValueDirective;
-  @ContentChildren(KCOptionsDirective) public optionsTemplate!: QueryList<KCOptionsDirective>;
+  @ContentChildren(KCOptionsDirective, { descendants: true })
+  public optionsTemplate!: QueryList<KCOptionsDirective>;
 
-
-  set value(val: string) {
+  set value(val: unknown) {
     this._value = val;
   }
-  get value(): string {
+  get value(): unknown {
     return this._value;
   }
-  private _value: string;
-
-  onChange: any = () => {};
-  onTouch: any = () => {}
+  private _value: unknown;
   /**
    * panelOpen is for open/close the overlay panel
    */
-  panelOpen: boolean = false;
+  panelOpen = false;
   /**
    * selectionOpened variable is for check if the overlay or dialog is open
    */
-  selectionOpened: boolean = false;
+  selectionOpened = false;
 
-  selectionModel!: SelectionModel<{ key: string; value: SelectionModel<{label: string; value: string}>}>;
+  selectionModel!: SelectionModel<Option<string> | OptionObj<string>>;
 
   private _dialogOverlayRef: OverlayRef | undefined;
+  private _destroy: Subject<void>;
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  private _onChange: (value: unknown) => void = () => {};
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  onTouch: () => unknown = () => {};
 
-
-  constructor(
-    private _overlay: Overlay,
-    private _viewContainerRef: ViewContainerRef,
-  ) {
+  constructor(private _overlay: Overlay, private _viewContainerRef: ViewContainerRef, private _cdr: ChangeDetectorRef) {
     this._value = '';
+    this._destroy = new Subject<void>();
+  }
+
+  ngAfterContentInit(): void {
+    console.log('size:', this.optionsTemplate.length);
   }
 
   ngOnInit(): void {
-    this.selectionModel = new SelectionModel(undefined, this.multiple);
-
-    // this.selectionModel.changed.subscribe((value) => console.log(value));
+    this.selectionModel = new SelectionModel<Option<string> | OptionObj<string>>(undefined, this.multiple);
 
     const temp = this.valueTemplate.template.createEmbeddedView({});
     this._valueRef.insert(temp);
+
+    this.selectionModel.changed.pipe(takeUntil(this._destroy)).subscribe(() => {
+      this._onSelect();
+    });
   }
 
-  writeValue(obj: any): void {
+  writeValue(obj: unknown): void {
     this.value = obj;
   }
 
-  registerOnChange(fn: any): void {
-    this.onChange = fn;
+  registerOnChange(fn: (value: unknown) => void): void {
+    this._onChange = fn;
   }
 
-  registerOnTouched(fn: any): void {
+  registerOnTouched(fn: () => unknown): void {
     this.onTouch = fn;
   }
 
@@ -151,30 +161,21 @@ export class AutocompleteComponent implements OnInit, ControlValueAccessor {
     else this.panelOpen = false;
 
     this.selectionOpened = false;
+  }
 
-    if (this._isOptionsObject) {
-      const test = this.selectionModel.selected.reduce<Record<string, unknown>>((acc, {key, value}) => {
-        const values = value.selected.map(({value}) => value);
-        acc[key] = values;
-
-        return acc;
-      }, {});
-
-      console.log('test', test);
-    } else {
-      const test = this.selectionModel.selected.map(({value}) => value);
-      console.log('test', test);
+  private _createObservableOptions(options: Options | OptionGroup): void {
+    if (!this._optionsCache) {
+      this._optionsCache = new ReplaySubject();
+      this._options = this._optionsCache;
     }
+
+    this._optionsCache.next(options);
   }
 
   private _openDialog(): void {
     const overlayRef = this._overlay.create({
       hasBackdrop: true,
-      positionStrategy: this._overlay
-        .position()
-        .global()
-        .centerHorizontally()
-        .centerVertically(),
+      positionStrategy: this._overlay.position().global().centerHorizontally().centerVertically(),
       disposeOnNavigation: true,
     });
 
@@ -190,12 +191,23 @@ export class AutocompleteComponent implements OnInit, ControlValueAccessor {
     this._dialogOverlayRef = undefined;
   }
 
-  private _createObservableOptions(options: Options): void {
-    if (!this._optionsCache) {
-      this._optionsCache = new ReplaySubject()
-      this._options = this._optionsCache;
-    }
+  /** Invoked when an option is clicked. */
+  private _onSelect(): void {
+    setTimeout(() => {
+      this._propagateChanges();
+    });
+  }
 
-    this._optionsCache.next(options);
+  /** Emits change event to set the model value. */
+  private _propagateChanges(): void {
+    const valueToEmit = this._getSelectionValues();
+
+    this._value = valueToEmit;
+    this._onChange(valueToEmit);
+    this._cdr.detectChanges();
+  }
+
+  private _getSelectionValues() {
+    return getValues(this.selectionModel as unknown as any);
   }
 }
