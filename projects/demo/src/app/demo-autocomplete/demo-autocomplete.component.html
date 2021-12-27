@@ -89,26 +89,39 @@
 
     <h3>Autocomplete group multiple nested</h3>
     <kc-autocomplete [formControl]="control" [options]="optionsNested$ | async" multiple>
-      <value *value>
+      <input [formControl]="search" type="text" />
+      <!-- <value *value>
         <input [formControl]="search" type="text" />
-      </value>
+      </value> -->
 
-      <kc-options-group *kcOptions="let options" [options]="options" key="locations">
+      <!-- <kc-options-group *kcOptions="let options" key="locations">
         <input [formControl]="search" type="text" />
         <kc-option *kcOption="let option" [option]="option"></kc-option>
-      </kc-options-group>
+      </kc-options-group> -->
 
-      <kc-options-group *kcOptions="let options" [options]="options" key="waiters" multiple>
+      <kc-group *kcGroup="let options" [options]="options" key="locations">
+        <!-- <pre>{{ options | json }}</pre> -->
+        <kc-option *kcOption="let option" [option]="option"></kc-option>
+      </kc-group>
+
+      <kc-group *kcGroup="let options" [options]="options" key="waiters">
+        <!-- <pre>{{ options | json }}</pre> -->
+
+        <kc-group *kcGroup="let options" [options]="options" key="users">
+          <!-- <pre>{{ options | json }}</pre> -->
+          <kc-option *kcOption="let option" [option]="option"></kc-option>
+        </kc-group>
+      </kc-group>
+
+      <!-- <kc-options-group *kcOptions="let options" [options]="options" key="waiters" multiple>
         <kc-options-group *kcOptions="let options" [options]="options" key="users" multiple>
-          <!-- <input [formControl]="search" type="text" /> -->
           <kc-option *kcOption="let option" [option]="option"></kc-option>
         </kc-options-group>
 
         <kc-options-group *kcOptions="let options" [options]="options" key="things" multiple>
-          <!-- <input [formControl]="search" type="text" /> -->
           <kc-option *kcOption="let option" [option]="option"></kc-option>
         </kc-options-group>
-      </kc-options-group>
+      </kc-options-group> -->
     </kc-autocomplete>
 
     <!--

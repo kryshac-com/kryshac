@@ -26,10 +26,7 @@ export class WrapDialogOptionsComponent implements OnChanges {
   ngOnChanges(): void {
     this._outlet.clear();
 
-    console.log('optionsTemplate', this.optionsTemplate);
-
     this.optionsTemplate.forEach((optionsTemplate) => {
-      console.log('template', optionsTemplate);
       const dialog = optionsTemplate.template.createEmbeddedView({ $implicit: this.options });
       this._outlet.insert(dialog);
     });

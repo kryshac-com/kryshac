@@ -3,8 +3,15 @@ import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 
 import { AutocompleteComponent } from './autocomplete.component';
-import { KCOptionComponent, KCOptionsComponent, OptionsGroupComponent, ValueComponent, WrapDialogOptionsComponent } from './components';
-import { KCOptionDirective, KCOptionsDirective, ValueDirective } from './directives';
+import {
+  GroupComponent,
+  KCOptionComponent,
+  KCOptionsComponent,
+  OptionsGroupComponent,
+  ValueComponent,
+  WrapDialogOptionsComponent,
+} from './components';
+import { GroupDirective, KCOptionDirective, KCOptionsDirective, ValueDirective } from './directives';
 
 @NgModule({
   declarations: [
@@ -17,11 +24,10 @@ import { KCOptionDirective, KCOptionsDirective, ValueDirective } from './directi
     KCOptionsDirective,
     WrapDialogOptionsComponent,
     OptionsGroupComponent,
+    GroupDirective,
+    GroupComponent,
   ],
-  imports: [
-    CommonModule,
-    OverlayModule,
-  ],
+  imports: [CommonModule, OverlayModule],
   exports: [
     AutocompleteComponent,
     ValueComponent,
@@ -30,7 +36,9 @@ import { KCOptionDirective, KCOptionsDirective, ValueDirective } from './directi
     KCOptionDirective,
     KCOptionsComponent,
     KCOptionsDirective,
-OptionsGroupComponent,
-  ]
+    OptionsGroupComponent,
+    GroupDirective,
+    GroupComponent,
+  ],
 })
-export class AutocompleteModule { }
+export class AutocompleteModule {}

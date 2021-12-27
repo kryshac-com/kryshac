@@ -21,7 +21,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { SelectionModel } from 'dist/selection-model';
 
 import { KCOptionDirective, KCOptionsDirective } from '../../directives';
-import { SELECTION } from '../../tokens';
+import { OPTIONS, SELECTION } from '../../tokens';
 
 @Component({
   selector: 'kc-options-group',
@@ -61,11 +61,12 @@ export class OptionsGroupComponent implements OnInit, OnDestroy, AfterContentIni
 
   private _destroy: Subject<void> = new Subject();
 
-  @Input() options!: Record<string, { value: any[] }>;
+  // @Input() options!: Record<string, { value: any[] }>;
 
   constructor(
     @SkipSelf() @Inject(SELECTION) private _selection: SelectionModel<{ key: string; value: unknown }>,
     private _cdr: ChangeDetectorRef,
+    @SkipSelf() @Inject(OPTIONS) private options: any,
   ) {}
 
   ngOnDestroy(): void {
@@ -76,7 +77,8 @@ export class OptionsGroupComponent implements OnInit, OnDestroy, AfterContentIni
   ngOnInit(): void {}
 
   ngAfterContentInit(): void {
-    console.log('after content init', this.optionTemplate, this.optionsTemplate);
+    return;
+
     if (this._selection.isSelected({ key: this.key, value: 'value' })) {
       this.selectionModel = this._selection.get({ key: this.key, value: 'value' })!.value as SelectionModel<{
         key: string;

@@ -1,7 +1,9 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Inject, Input } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Inject, Input, OnDestroy } from '@angular/core';
+import { Subject, takeUntil } from 'rxjs';
 
 import { SELECTION } from '../../tokens';
+import { Option } from '../../types';
 
 @Component({
   selector: 'kc-option',
@@ -9,13 +11,20 @@ import { SELECTION } from '../../tokens';
   styleUrls: ['./kc-option.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KCOptionComponent {
-  @Input() option!: any;
+export class KCOptionComponent implements OnDestroy {
+  @Input() option!: Option;
+
+  private _destroy: Subject<void>;
 
   constructor(@Inject(SELECTION) private _selection: SelectionModel<unknown>, private _cdr: ChangeDetectorRef) {
-    this._selection.changed.subscribe(() => {
-      this._cdr.detectChanges();
-    });
+    this._destroy = new Subject();
+
+    this._selection.changed.pipe(takeUntil(this._destroy)).subscribe(() => this._cdr.markForCheck());
+  }
+
+  ngOnDestroy(): void {
+    this._destroy.next();
+    this._destroy.complete();
   }
 
   get selected(): boolean {

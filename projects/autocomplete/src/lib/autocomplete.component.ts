@@ -22,9 +22,10 @@ import { Observable, ReplaySubject, Subject, isObservable, takeUntil } from 'rxj
 
 import { SelectionModel } from 'dist/selection-model';
 
-import { KCOptionsDirective, ValueDirective } from './directives';
+import { GroupDirective, KCOptionsDirective, ValueDirective } from './directives';
+import { getValues } from './helpers';
 import { SELECTION } from './tokens';
-import { Option, OptionGroup, OptionObj, Options, getValues } from './types';
+import { Group, Option, OptionSelection } from './types';
 
 @Component({
   selector: 'kc-autocomplete',
@@ -45,17 +46,19 @@ import { Option, OptionGroup, OptionObj, Options, getValues } from './types';
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AutocompleteComponent implements OnInit, AfterContentInit, ControlValueAccessor {
+export class AutocompleteComponent<T extends number | string = string>
+  implements OnInit, AfterContentInit, ControlValueAccessor
+{
   @Input()
-  get options(): Observable<Options | OptionGroup> {
+  get options(): Observable<Option<T>[] | Group<T>> {
     return this._options;
   }
-  set options(options: Observable<Options | OptionGroup> | Options | OptionGroup) {
+  set options(options: Observable<Option<T>[] | Group<T>> | Option<T>[] | Group<T>) {
     if (isObservable(options)) this._options = options;
     else this._createObservableOptions(options);
   }
-  private _options!: Observable<Options | OptionGroup>;
-  private _optionsCache: ReplaySubject<Options | OptionGroup> | undefined;
+  private _options!: Observable<Option<T>[] | Group<T>>;
+  private _optionsCache: ReplaySubject<Option<T>[] | Group<T>> | undefined;
 
   /**
    * allow user to open selection in modal
@@ -85,11 +88,14 @@ export class AutocompleteComponent implements OnInit, AfterContentInit, ControlV
   @ViewChild('valueRef', { static: true, read: ViewContainerRef }) private _valueRef!: ViewContainerRef;
   @ViewChild('templateRef') templateRef!: TemplateRef<unknown>;
   @ContentChild(ValueDirective, { static: true }) valueTemplate!: ValueDirective;
-  @ContentChildren(KCOptionsDirective, { descendants: true })
+  @ContentChildren(KCOptionsDirective)
   public optionsTemplate!: QueryList<KCOptionsDirective>;
+
+  @ContentChildren(GroupDirective, { descendants: true }) groups!: QueryList<GroupDirective<T>>;
 
   set value(val: unknown) {
     this._value = val;
+    this._cdr.detectChanges();
   }
   get value(): unknown {
     return this._value;
@@ -104,7 +110,7 @@ export class AutocompleteComponent implements OnInit, AfterContentInit, ControlV
    */
   selectionOpened = false;
 
-  selectionModel!: SelectionModel<Option<string> | OptionObj<string>>;
+  selectionModel!: SelectionModel<Option<T> | OptionSelection<T>>;
 
   private _dialogOverlayRef: OverlayRef | undefined;
   private _destroy: Subject<void>;
@@ -114,22 +120,33 @@ export class AutocompleteComponent implements OnInit, AfterContentInit, ControlV
   onTouch: () => unknown = () => {};
 
   constructor(private _overlay: Overlay, private _viewContainerRef: ViewContainerRef, private _cdr: ChangeDetectorRef) {
-    this._value = '';
     this._destroy = new Subject<void>();
   }
 
   ngAfterContentInit(): void {
-    console.log('size:', this.optionsTemplate.length);
+    this.options.pipe(takeUntil(this._destroy)).subscribe(
+      (options) =>
+        this.groups.forEach((group) => {
+          group.render(options);
+        }),
+      // update selection from here
+      // after all groups are initialized
+    );
   }
 
   ngOnInit(): void {
-    this.selectionModel = new SelectionModel<Option<string> | OptionObj<string>>(undefined, this.multiple);
+    this.selectionModel = new SelectionModel<Option<T> | OptionSelection<T>>(undefined, this.multiple);
 
-    const temp = this.valueTemplate.template.createEmbeddedView({});
-    this._valueRef.insert(temp);
+    // const temp = this.valueTemplate.template.createEmbeddedView({});
+    // this._valueRef.insert(temp);
 
     this.selectionModel.changed.pipe(takeUntil(this._destroy)).subscribe(() => {
-      this._onSelect();
+      /**
+       * When the groups are initialized, the selectionModel changes from the AfterContentInit hook
+       * Angular does not expect events to be raised during change detection, so any state change
+       * (such as a form control's 'ng-touched') will cause a changed-after-checked error.
+       */
+      void Promise.resolve().then(() => this._onSelect());
     });
   }
 
@@ -163,7 +180,7 @@ export class AutocompleteComponent implements OnInit, AfterContentInit, ControlV
     this.selectionOpened = false;
   }
 
-  private _createObservableOptions(options: Options | OptionGroup): void {
+  private _createObservableOptions(options: Option<T>[] | Group<T>): void {
     if (!this._optionsCache) {
       this._optionsCache = new ReplaySubject();
       this._options = this._optionsCache;
@@ -193,13 +210,6 @@ export class AutocompleteComponent implements OnInit, AfterContentInit, ControlV
 
   /** Invoked when an option is clicked. */
   private _onSelect(): void {
-    setTimeout(() => {
-      this._propagateChanges();
-    });
-  }
-
-  /** Emits change event to set the model value. */
-  private _propagateChanges(): void {
     const valueToEmit = this._getSelectionValues();
 
     this._value = valueToEmit;
@@ -208,6 +218,6 @@ export class AutocompleteComponent implements OnInit, AfterContentInit, ControlV
   }
 
   private _getSelectionValues() {
-    return getValues(this.selectionModel as unknown as any);
+    return getValues<T>(this.selectionModel);
   }
 }
