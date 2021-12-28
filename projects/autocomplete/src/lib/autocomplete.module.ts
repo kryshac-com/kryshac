@@ -9,7 +9,6 @@ import {
   KCOptionsComponent,
   OptionsGroupComponent,
   ValueComponent,
-  WrapDialogOptionsComponent,
 } from './components';
 import { GroupDirective, KCOptionDirective, KCOptionsDirective, ValueDirective } from './directives';
 
@@ -22,7 +21,6 @@ import { GroupDirective, KCOptionDirective, KCOptionsDirective, ValueDirective }
     KCOptionDirective,
     KCOptionsComponent,
     KCOptionsDirective,
-    WrapDialogOptionsComponent,
     OptionsGroupComponent,
     GroupDirective,
     GroupComponent,

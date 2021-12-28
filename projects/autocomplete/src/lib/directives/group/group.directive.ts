@@ -7,14 +7,14 @@ import { Group, Option } from '../../types';
 })
 export class GroupDirective<T extends number | string> {
   constructor(
-    public template: TemplateRef<unknown>,
-    public viewContainer: ViewContainerRef,
+    private _template: TemplateRef<unknown>,
+    private _viewContainer: ViewContainerRef,
     private _cdr: ChangeDetectorRef,
   ) {}
 
   render(options: Option<T>[] | Group<T>) {
-    this.viewContainer.clear();
-    this.viewContainer.createEmbeddedView(this.template, { $implicit: options });
+    this._viewContainer.clear();
+    this._viewContainer.createEmbeddedView(this._template, { $implicit: options });
     this._cdr.detectChanges();
   }
 }

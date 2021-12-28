@@ -1,15 +1,18 @@
-import { Directive, Inject, TemplateRef, ViewContainerRef } from '@angular/core';
+import { ChangeDetectorRef, Directive, TemplateRef, ViewContainerRef } from '@angular/core';
 
-import { OPTIONS, SELECTION } from '../../tokens';
+import { Option } from '../../types';
 
 @Directive({ selector: '[kcOptions]' })
-export class KCOptionsDirective {
+export class KCOptionsDirective<T extends number | string> {
   constructor(
-    public template: TemplateRef<unknown>,
-    private viewContainer: ViewContainerRef,
-    @Inject(OPTIONS) private _options: any,
-    @Inject(SELECTION) private _selections: any,
-  ) {
-    this.viewContainer.createEmbeddedView(this.template);
+    private _template: TemplateRef<unknown>,
+    private _viewContainer: ViewContainerRef,
+    private _cdr: ChangeDetectorRef,
+  ) {}
+
+  render(options: Option<T>[]) {
+    this._viewContainer.clear();
+    this._viewContainer.createEmbeddedView(this._template, { $implicit: options });
+    this._cdr.detectChanges();
   }
 }

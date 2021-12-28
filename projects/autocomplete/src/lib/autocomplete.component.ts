@@ -88,10 +88,9 @@ export class AutocompleteComponent<T extends number | string = string>
   @ViewChild('valueRef', { static: true, read: ViewContainerRef }) private _valueRef!: ViewContainerRef;
   @ViewChild('templateRef') templateRef!: TemplateRef<unknown>;
   @ContentChild(ValueDirective, { static: true }) valueTemplate!: ValueDirective;
-  @ContentChildren(KCOptionsDirective)
-  public optionsTemplate!: QueryList<KCOptionsDirective>;
 
-  @ContentChildren(GroupDirective, { descendants: true }) groups!: QueryList<GroupDirective<T>>;
+  @ContentChildren(GroupDirective) groups!: QueryList<GroupDirective<T>>;
+  @ContentChildren(KCOptionsDirective) option!: QueryList<KCOptionsDirective<T>>;
 
   set value(val: unknown) {
     this._value = val;
@@ -124,14 +123,10 @@ export class AutocompleteComponent<T extends number | string = string>
   }
 
   ngAfterContentInit(): void {
-    this.options.pipe(takeUntil(this._destroy)).subscribe(
-      (options) =>
-        this.groups.forEach((group) => {
-          group.render(options);
-        }),
-      // update selection from here
-      // after all groups are initialized
-    );
+    this.options.pipe(takeUntil(this._destroy)).subscribe((options) => {
+      if (this.groups) this.groups.forEach((group) => group.render(options));
+      if (this.option) this.option.forEach((option) => option.render(options as unknown as Option<T>[]));
+    });
   }
 
   ngOnInit(): void {

@@ -1,22 +1,20 @@
+import { BooleanInput, coerceBooleanProperty } from '@angular/cdk/coercion';
 import {
   AfterContentInit,
   ChangeDetectionStrategy,
   Component,
-  ContentChild,
   ContentChildren,
   Inject,
   Input,
   OnInit,
   QueryList,
   SkipSelf,
-  ViewChild,
-  ViewContainerRef,
   forwardRef,
 } from '@angular/core';
 
 import { SelectionModel } from 'dist/selection-model';
 
-import { GroupDirective, KCOptionDirective } from '../../directives';
+import { GroupDirective, KCOptionsDirective } from '../../directives';
 import { SELECTION } from '../../tokens';
 import { Group, Option, OptionGroup } from '../../types';
 
@@ -38,9 +36,17 @@ export class GroupComponent<T extends number | string> implements OnInit, AfterC
   @Input() options!: Group<T>;
   @Input() key!: string;
 
-  @ViewChild('outlet', { static: true, read: ViewContainerRef }) private _outlet!: ViewContainerRef;
-  @ContentChild(KCOptionDirective, { static: true }) option!: KCOptionDirective;
-  @ContentChildren(GroupDirective, { descendants: true }) groups!: QueryList<GroupDirective<T>>;
+  @Input()
+  get multiple(): boolean {
+    return this._multiple;
+  }
+  set multiple(value: BooleanInput) {
+    this._multiple = coerceBooleanProperty(value);
+  }
+  private _multiple = false;
+
+  @ContentChildren(GroupDirective) groups!: QueryList<GroupDirective<T>>;
+  @ContentChildren(KCOptionsDirective) option!: QueryList<KCOptionsDirective<T>>;
 
   selectionModel!: SelectionModel<{ key: string; value: unknown }>;
 
@@ -48,10 +54,11 @@ export class GroupComponent<T extends number | string> implements OnInit, AfterC
 
   ngAfterContentInit(): void {
     this.groups.forEach((group) => group.render(this._getGroup(this.options)));
+    this.option.forEach((group) => group.render(this._getOptions(this.options)));
   }
 
   ngOnInit(): void {
-    this.selectionModel = new SelectionModel(undefined, false);
+    this.selectionModel = new SelectionModel(undefined, this.multiple);
 
     this._selection.select({
       key: this.key,
@@ -68,12 +75,6 @@ export class GroupComponent<T extends number | string> implements OnInit, AfterC
         });
       }
     });
-
-    if (this.option) {
-      this._getOptions(this.options).forEach((option) =>
-        this._outlet.insert(this.option.template.createEmbeddedView({ $implicit: option })),
-      );
-    }
   }
 
   private _getGroup(options: Group<T>): Group<T> {

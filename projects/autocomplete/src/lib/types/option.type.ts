@@ -18,8 +18,6 @@ export interface OptionGroup<T extends string | number = string> {
   label?: string;
 }
 
-export type Options<T extends string | number = string> = Group<T> | OptionGroup<T>;
-
 /**
  * options type for output options
  */
@@ -28,8 +26,6 @@ export type OptionValue<T extends number | string = string> = T[];
 export type OptionObjectValue<T extends number | string> = {
   [K: string]: OptionValue<T> | OptionObjectValue<T>;
 };
-
-export type OptionsValue<T extends string | number = string> = T[] | OptionObjectValue<T>;
 
 /**
  * options for internal structure

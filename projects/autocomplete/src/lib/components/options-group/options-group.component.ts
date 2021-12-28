@@ -9,7 +9,6 @@ import {
   Inject,
   Input,
   OnDestroy,
-  OnInit,
   QueryList,
   SkipSelf,
   ViewChild,
@@ -21,7 +20,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { SelectionModel } from 'dist/selection-model';
 
 import { KCOptionDirective, KCOptionsDirective } from '../../directives';
-import { OPTIONS, SELECTION } from '../../tokens';
+import { SELECTION } from '../../tokens';
 
 @Component({
   selector: 'kc-options-group',
@@ -36,7 +35,7 @@ import { OPTIONS, SELECTION } from '../../tokens';
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class OptionsGroupComponent implements OnInit, OnDestroy, AfterContentInit {
+export class OptionsGroupComponent implements OnDestroy, AfterContentInit {
   @Input() key!: string;
   /**
    * allow user to open selection in modal
@@ -51,7 +50,7 @@ export class OptionsGroupComponent implements OnInit, OnDestroy, AfterContentIni
   private _multiple = false;
 
   @ContentChild(KCOptionDirective, { static: true }) public optionTemplate!: KCOptionDirective;
-  @ContentChildren(KCOptionsDirective) public optionsTemplate!: QueryList<KCOptionsDirective>;
+  @ContentChildren(KCOptionsDirective) public optionsTemplate!: QueryList<KCOptionsDirective<string>>;
   /**
    *  { static: true } needs to be set when you want to access the ViewChild in ngOnInit.
    */
@@ -66,15 +65,12 @@ export class OptionsGroupComponent implements OnInit, OnDestroy, AfterContentIni
   constructor(
     @SkipSelf() @Inject(SELECTION) private _selection: SelectionModel<{ key: string; value: unknown }>,
     private _cdr: ChangeDetectorRef,
-    @SkipSelf() @Inject(OPTIONS) private options: any,
   ) {}
 
   ngOnDestroy(): void {
     this._destroy.next();
     this._destroy.complete();
   }
-
-  ngOnInit(): void {}
 
   ngAfterContentInit(): void {
     return;
@@ -124,15 +120,15 @@ export class OptionsGroupComponent implements OnInit, OnDestroy, AfterContentIni
     this._outlet.clear();
 
     if (this.optionTemplate) {
-      this.options[this.key].value.forEach((option: unknown) => {
-        const dialog = this.optionTemplate.template.createEmbeddedView({ $implicit: option });
-        this._outlet.insert(dialog);
-      });
+      // this.options[this.key].value.forEach((option: unknown) => {
+      //   const dialog = this.optionTemplate.template.createEmbeddedView({ $implicit: option });
+      //   this._outlet.insert(dialog);
+      // });
     } else if (this.optionsTemplate) {
-      this.optionsTemplate.forEach((optionsTemplate) => {
-        const dialog = optionsTemplate.template.createEmbeddedView({ $implicit: this.options[this.key] });
-        this._outlet.insert(dialog);
-      });
+      // this.optionsTemplate.forEach((optionsTemplate) => {
+      // const dialog = optionsTemplate.template.createEmbeddedView({ $implicit: this.options[this.key] });
+      // this._outlet.insert(dialog);
+      // });
     }
   }
 }
