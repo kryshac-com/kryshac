@@ -1,16 +1,16 @@
 <div class="panel">
   <div>
-    <h3>Autocomplete simple option</h3>
+    <!-- <h3>Autocomplete simple option</h3>
     <kc-autocomplete [formControl]="control" [options]="(simpleOptions | async)!">
-      <!-- <value *value>
+      <value *value>
         <input [formControl]="search" type="text" />
-      </value> -->
+      </value>
 
       <kc-options *kcOptions="let options" [options]="options">
         <input [formControl]="search" type="text" />
         <kc-option *kcOption="let option" [option]="option"></kc-option>
       </kc-options>
-    </kc-autocomplete>
+    </kc-autocomplete> -->
 
     <!-- <h3>Autocomplete simple option (observable)</h3>
     <kc-autocomplete [formControl]="control" [options]="simpleOptions">
@@ -90,42 +90,26 @@
     <h3>Autocomplete group multiple nested</h3>
     <kc-autocomplete [formControl]="control" [options]="optionsNested$ | async" multiple>
       <input [formControl]="search" type="text" />
-      <!-- <value *value>
-        <input [formControl]="search" type="text" />
-      </value> -->
-
-      <!-- <kc-options-group *kcOptions="let options" key="locations">
-        <input [formControl]="search" type="text" />
-        <kc-option *kcOption="let option" [option]="option"></kc-option>
-      </kc-options-group> -->
 
       <kc-group *kcGroup="let options" [options]="options" key="locations">
-        <!-- <pre>{{ options | json }}</pre> -->
         <kc-options *kcOptions="let options" [options]="options">
           <kc-option *kcOption="let option" [option]="option"></kc-option>
         </kc-options>
       </kc-group>
 
       <kc-group *kcGroup="let options" [options]="options" key="waiters">
-        <!-- <pre>{{ options | json }}</pre> -->
-
         <kc-group *kcGroup="let options" [options]="options" key="users" multiple>
-          <!-- <pre>{{ options | json }}</pre> -->
+          <kc-options *kcOptions="let options" [options]="options">
+            <kc-option *kcOption="let option" [option]="option"></kc-option>
+          </kc-options>
+
+          test
+
           <kc-options *kcOptions="let options" [options]="options">
             <kc-option *kcOption="let option" [option]="option"></kc-option>
           </kc-options>
         </kc-group>
       </kc-group>
-
-      <!-- <kc-options-group *kcOptions="let options" [options]="options" key="waiters" multiple>
-        <kc-options-group *kcOptions="let options" [options]="options" key="users" multiple>
-          <kc-option *kcOption="let option" [option]="option"></kc-option>
-        </kc-options-group>
-
-        <kc-options-group *kcOptions="let options" [options]="options" key="things" multiple>
-          <kc-option *kcOption="let option" [option]="option"></kc-option>
-        </kc-options-group>
-      </kc-options-group> -->
     </kc-autocomplete>
 
     <!--

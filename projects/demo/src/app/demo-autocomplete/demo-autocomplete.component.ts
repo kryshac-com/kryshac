@@ -13,7 +13,12 @@ import { Group, Option, OptionGroup } from 'dist/autocomplete';
 })
 export class DemoAutocompleteComponent {
   search = new FormControl();
-  control = new FormControl();
+  control = new FormControl({
+    locations: ['Location 1'],
+    waiters: {
+      users: ['Waiter 3'],
+    },
+  });
 
   simpleOptionsTest: Option[] = [
     {
@@ -81,16 +86,30 @@ export class DemoAutocompleteComponent {
       users: {
         label: 'Users',
         value: [
-          {
-            key: 'waiter 1',
-            label: 'Waiter 1',
-            value: 'Waiter 1',
-          },
-          {
-            key: 'waiter 2',
-            label: 'Waiter 2',
-            value: 'Waiter 2',
-          },
+          [
+            {
+              key: 'waiter 1',
+              label: 'Waiter 1',
+              value: 'Waiter 1',
+            },
+            {
+              key: 'waiter 2',
+              label: 'Waiter 2',
+              value: 'Waiter 2',
+            },
+          ],
+          [
+            {
+              key: 'waiter 3',
+              label: 'Waiter 3',
+              value: 'Waiter 3',
+            },
+            {
+              key: 'waiter 4',
+              label: 'Waiter 4',
+              value: 'Waiter 4',
+            },
+          ],
         ],
       },
       things: {
@@ -135,22 +154,30 @@ export class DemoAutocompleteComponent {
   );
 
   private _filterNestedOptions(options: Option[], search: string): Option[];
+  private _filterNestedOptions(options: Option[][], search: string): Option[][];
   private _filterNestedOptions(options: Group, search: string): Group;
-  private _filterNestedOptions(options: Option[] | Group, search: string): Option[] | Group {
-    if (Array.isArray(options))
+  private _filterNestedOptions(options: Option[] | Option[][] | Group, search: string): Option[] | Option[][] | Group {
+    if (this._isOptionChunks(options)) return options.map((option) => this._filterNestedOptions(option, search));
+    else if (Array.isArray(options))
       return options.filter((option) => option.label?.toLowerCase().includes(search.toLowerCase()));
     else {
       return Object.entries(options).reduce<Group>((acc, [key, item]) => {
         if (this._isOptionObject(item))
           acc[key] = {
             ...item,
-            value: this._filterNestedOptions(item.value, search),
+            value: this._isOptionChunks(item.value)
+              ? this._filterNestedOptions(item.value, search)
+              : this._filterNestedOptions(item.value, search),
           };
         else acc[key] = this._filterNestedOptions(item, search);
 
         return acc;
       }, {});
     }
+  }
+
+  private _isOptionChunks(option: Option[] | Option[][] | Group): option is Option[][] {
+    return Array.isArray(option) && Array.isArray(option[0]);
   }
 
   private _isOptionObject(option: Group | OptionGroup): option is OptionGroup {

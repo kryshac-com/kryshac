@@ -19,13 +19,14 @@ import {
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { Observable, ReplaySubject, Subject, isObservable, takeUntil } from 'rxjs';
+import { first, map, switchMap, tap } from 'rxjs/operators';
 
 import { SelectionModel } from 'dist/selection-model';
 
 import { GroupDirective, KCOptionsDirective, ValueDirective } from './directives';
 import { getValues } from './helpers';
-import { SELECTION } from './tokens';
-import { Group, Option, OptionSelection } from './types';
+import { SELECTION, VALUE } from './tokens';
+import { Group, Option, OptionGroupValue, OptionSelection, OptionValue } from './types';
 
 @Component({
   selector: 'kc-autocomplete',
@@ -39,7 +40,15 @@ import { Group, Option, OptionSelection } from './types';
     },
     {
       provide: SELECTION,
-      useFactory: (autocomplete: AutocompleteComponent) => autocomplete.selectionModel,
+      useFactory: (component: AutocompleteComponent) => {
+        console.log('get selection');
+        return component.selectionModel;
+      },
+      deps: [forwardRef(() => AutocompleteComponent)],
+    },
+    {
+      provide: VALUE,
+      useFactory: (component: AutocompleteComponent) => component.value,
       deps: [forwardRef(() => AutocompleteComponent)],
     },
   ],
@@ -92,14 +101,14 @@ export class AutocompleteComponent<T extends number | string = string>
   @ContentChildren(GroupDirective) groups!: QueryList<GroupDirective<T>>;
   @ContentChildren(KCOptionsDirective) option!: QueryList<KCOptionsDirective<T>>;
 
-  set value(val: unknown) {
+  set value(val: OptionValue<T> | OptionGroupValue<T>) {
     this._value = val;
     this._cdr.detectChanges();
   }
-  get value(): unknown {
+  get value(): OptionValue<T> | OptionGroupValue<T> {
     return this._value;
   }
-  private _value: unknown;
+  private _value!: OptionValue<T> | OptionGroupValue<T>;
   /**
    * panelOpen is for open/close the overlay panel
    */
@@ -130,23 +139,13 @@ export class AutocompleteComponent<T extends number | string = string>
   }
 
   ngOnInit(): void {
-    this.selectionModel = new SelectionModel<Option<T> | OptionSelection<T>>(undefined, this.multiple);
-
-    // const temp = this.valueTemplate.template.createEmbeddedView({});
-    // this._valueRef.insert(temp);
-
-    this.selectionModel.changed.pipe(takeUntil(this._destroy)).subscribe(() => {
-      /**
-       * When the groups are initialized, the selectionModel changes from the AfterContentInit hook
-       * Angular does not expect events to be raised during change detection, so any state change
-       * (such as a form control's 'ng-touched') will cause a changed-after-checked error.
-       */
-      void Promise.resolve().then(() => this._onSelect());
-    });
+    console.log('value', this.value);
   }
 
-  writeValue(obj: unknown): void {
+  writeValue(obj: OptionValue<T> | OptionGroupValue<T>): void {
     this.value = obj;
+
+    if (!this.selectionModel) this._initSelectionModel();
   }
 
   registerOnChange(fn: (value: unknown) => void): void {
@@ -173,6 +172,39 @@ export class AutocompleteComponent<T extends number | string = string>
     else this.panelOpen = false;
 
     this.selectionOpened = false;
+  }
+
+  private _initSelectionModel(): void {
+    this._getSelectedOptions
+      .pipe(
+        /**
+         * get first event from selected options to initialize selection model
+         */
+        first(),
+        map((options) => new SelectionModel<Option<T> | OptionSelection<T>>(options, this.multiple)),
+        tap((selectionModel) => (this.selectionModel = selectionModel)),
+        switchMap((selectionModel) => selectionModel.changed),
+        takeUntil(this._destroy),
+      )
+      .subscribe(() => {
+        /**
+         * When the groups are initialized, the selectionModel changes from the AfterContentInit hook
+         * Angular does not expect events to be raised during change detection, so any state change
+         * (such as a form control's 'ng-touched') will cause a changed-after-checked error.
+         */
+        void Promise.resolve().then(() => this._onSelect());
+      });
+  }
+
+  private get _getSelectedOptions(): Observable<Option<T>[] | undefined> {
+    return this.options.pipe(
+      map((options) => {
+        if (Array.isArray(options))
+          return options.filter((option) => (this.value as OptionValue<T>).some((value) => value === option.value));
+
+        return undefined;
+      }),
+    );
   }
 
   private _createObservableOptions(options: Option<T>[] | Group<T>): void {

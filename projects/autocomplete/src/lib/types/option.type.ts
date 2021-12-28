@@ -14,17 +14,17 @@ export type Group<T extends string | number = string> = {
 };
 
 export interface OptionGroup<T extends string | number = string> {
-  value: Option<T>[];
+  value: Option<T>[] | Option<T>[][];
   label?: string;
 }
 
 /**
  * options type for output options
  */
-export type OptionValue<T extends number | string = string> = T[];
+export type OptionValue<T extends number | string = string> = Option<T>['value'][];
 
-export type OptionObjectValue<T extends number | string> = {
-  [K: string]: OptionValue<T> | OptionObjectValue<T>;
+export type OptionGroupValue<T extends number | string> = {
+  [K: string]: OptionValue<T> | OptionGroupValue<T>;
 };
 
 /**
