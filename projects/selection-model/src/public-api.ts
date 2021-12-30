@@ -1,3 +1,4 @@
+export * from './lib/map-observable';
 /*
  * Public API Surface of selection-model
  */

@@ -11,6 +11,7 @@ export class KCOptionsDirective<T extends number | string> {
   ) {}
 
   render(options: Option<T>[]) {
+    console.log('render options', options);
     this._viewContainer.clear();
     this._viewContainer.createEmbeddedView(this._template, { $implicit: options });
     this._cdr.detectChanges();

@@ -12,7 +12,7 @@ export class GroupDirective<T extends number | string> {
     private _cdr: ChangeDetectorRef,
   ) {}
 
-  render(options: Option<T>[] | Group<T>) {
+  render(options: Option<T>[] | Option<T>[][] | Group<T>) {
     this._viewContainer.clear();
     this._viewContainer.createEmbeddedView(this._template, { $implicit: options });
     this._cdr.detectChanges();

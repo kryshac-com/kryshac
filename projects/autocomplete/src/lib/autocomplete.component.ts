@@ -59,15 +59,15 @@ export class AutocompleteComponent<T extends number | string = string>
   implements OnInit, AfterContentInit, ControlValueAccessor
 {
   @Input()
-  get options(): Observable<Option<T>[] | Group<T>> {
+  get options(): Observable<Option<T>[] | Option<T>[][] | Group<T>> {
     return this._options;
   }
-  set options(options: Observable<Option<T>[] | Group<T>> | Option<T>[] | Group<T>) {
+  set options(options: Observable<Option<T>[] | Option<T>[][] | Group<T>> | Option<T>[] | Option<T>[][] | Group<T>) {
     if (isObservable(options)) this._options = options;
     else this._createObservableOptions(options);
   }
-  private _options!: Observable<Option<T>[] | Group<T>>;
-  private _optionsCache: ReplaySubject<Option<T>[] | Group<T>> | undefined;
+  private _options!: Observable<Option<T>[] | Option<T>[][] | Group<T>>;
+  private _optionsCache: ReplaySubject<Option<T>[] | Option<T>[][] | Group<T>> | undefined;
 
   /**
    * allow user to open selection in modal
@@ -134,7 +134,10 @@ export class AutocompleteComponent<T extends number | string = string>
   ngAfterContentInit(): void {
     this.options.pipe(takeUntil(this._destroy)).subscribe((options) => {
       if (this.groups) this.groups.forEach((group) => group.render(options));
-      if (this.option) this.option.forEach((option) => option.render(options as unknown as Option<T>[]));
+      if (this.option)
+        this.option.forEach((group, index) =>
+          group.render(this._getOptions(options as Option<T>[] | Option<T>[][])[index] as unknown as Option<T>[]),
+        );
     });
   }
 
@@ -180,6 +183,7 @@ export class AutocompleteComponent<T extends number | string = string>
         /**
          * get first event from selected options to initialize selection model
          */
+        tap((tapLog) => console.log('get selected options', tapLog)),
         first(),
         map((options) => new SelectionModel<Option<T> | OptionSelection<T>>(options, this.multiple)),
         tap((selectionModel) => (this.selectionModel = selectionModel)),
@@ -196,18 +200,42 @@ export class AutocompleteComponent<T extends number | string = string>
       });
   }
 
+  private _getOptions(options: Option<T>[] | Option<T>[][]): Option<T>[][] {
+    if (this._isOptionChunks(options)) return options;
+
+    return [options];
+  }
+
   private get _getSelectedOptions(): Observable<Option<T>[] | undefined> {
     return this.options.pipe(
+      tap((tapLog) => console.log('get function', tapLog)),
       map((options) => {
-        if (Array.isArray(options))
-          return options.filter((option) => (this.value as OptionValue<T>).some((value) => value === option.value));
+        if (Array.isArray(options)) {
+          if (this._isOptionChunks(options)) {
+            return options.flat().filter((option) => {
+              if (Array.isArray(this.value)) return this.value.some((value) => value === option.value);
+
+              return this.value === option.value;
+            });
+          } else
+            return options.filter((option) => {
+              if (Array.isArray(this.value)) return this.value.some((value) => value === option.value);
+
+              return this.value === option.value;
+            });
+        }
 
         return undefined;
       }),
+      tap((tapLog) => console.log('after', tapLog)),
     );
   }
 
-  private _createObservableOptions(options: Option<T>[] | Group<T>): void {
+  private _isOptionChunks(option: Option<T>[] | Option<T>[][]): option is Option<T>[][] {
+    return Array.isArray(option[0]);
+  }
+
+  private _createObservableOptions(options: Option<T>[] | Option<T>[][] | Group<T>): void {
     if (!this._optionsCache) {
       this._optionsCache = new ReplaySubject();
       this._options = this._optionsCache;

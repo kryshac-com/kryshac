@@ -5,7 +5,9 @@ import { Option, OptionGroupValue, OptionSelection, OptionValue } from '../types
 export function getValues<T extends number | string>(
   values: SelectionModel<Option<T> | OptionSelection<T>>,
 ): OptionValue<T> | OptionGroupValue<T> {
-  return values.selected.reduce<OptionValue<T> | OptionGroupValue<T>>((acc, item) => {
+  if (!Array.isArray(values.selected)) return values.selected;
+
+  return values.selected.reduce<T[] | OptionGroupValue<T>>((acc, item) => {
     if (checkIsOptionValue(item)) return [...(acc as []), item.value];
     /**
      * change the accumulator to an object and check if is the first time

@@ -21,7 +21,7 @@ export interface OptionGroup<T extends string | number = string> {
 /**
  * options type for output options
  */
-export type OptionValue<T extends number | string = string> = Option<T>['value'][];
+export type OptionValue<T extends number | string = string> = T | T[];
 
 export type OptionGroupValue<T extends number | string> = {
   [K: string]: OptionValue<T> | OptionGroupValue<T>;

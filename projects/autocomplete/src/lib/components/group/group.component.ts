@@ -62,9 +62,9 @@ export class GroupComponent<T extends number | string> implements OnInit, AfterC
   ) {}
 
   get value(): OptionValue<T> | OptionGroupValue<T> {
-    if (Array.isArray(this._value)) return this._value;
+    if (this._isOptionGroupValue(this._value)) return this._value[this.key];
 
-    return this._value[this.key];
+    return this.value;
   }
 
   ngAfterContentInit(): void {
@@ -77,8 +77,7 @@ export class GroupComponent<T extends number | string> implements OnInit, AfterC
   }
 
   private _initSelection(): void {
-    const option = this._getOption();
-    this.selectionModel = new SelectionModel<Option<T> | OptionSelection<T>>(option, this.multiple);
+    this.selectionModel = this._getSelection();
 
     this._selection.select({
       key: this.key,
@@ -97,11 +96,25 @@ export class GroupComponent<T extends number | string> implements OnInit, AfterC
     });
   }
 
+  private _getSelection(): SelectionModel<Option<T> | OptionSelection<T>> {
+    if (this._selection.isSelected({ key: this.key, value: [] as unknown as T }))
+      return this._selection.get({ key: this.key, value: [] as unknown as T })!.value as SelectionModel<
+        Option<T> | OptionSelection<T>
+      >;
+
+    const option = this._getOption();
+    return new SelectionModel<Option<T> | OptionSelection<T>>(option, this.multiple);
+  }
+
   private _getOption(): Option<T>[] | undefined {
     if (this._isOptionGroup(this.options[this.key]))
       return this._getOptions(this.options)
         .flat()
-        .filter((option) => (this.value as OptionValue<T>).some((value) => value === option.value));
+        .filter((option) => {
+          if (Array.isArray(this.value)) return this.value.some((value) => value === option.value);
+
+          return this.value === option.value;
+        });
 
     return undefined;
   }
@@ -124,6 +137,10 @@ export class GroupComponent<T extends number | string> implements OnInit, AfterC
 
   private _isOptionGroup(option: Group<T> | OptionGroup<T>): option is OptionGroup<T> {
     return !!option.value;
+  }
+
+  private _isOptionGroupValue(value: OptionValue<T> | OptionGroupValue<T>): value is OptionGroupValue<T> {
+    return typeof value === 'object' && !Array.isArray(value);
   }
 
   private _isOptionChunks(option: Option<T>[] | Option<T>[][]): option is Option<T>[][] {

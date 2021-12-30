@@ -13,6 +13,7 @@ import { Group, Option, OptionGroup } from 'dist/autocomplete';
 })
 export class DemoAutocompleteComponent {
   search = new FormControl();
+  simpleControl = new FormControl('Location 1');
   control = new FormControl({
     locations: ['Location 1'],
     waiters: {
@@ -20,17 +21,31 @@ export class DemoAutocompleteComponent {
     },
   });
 
-  simpleOptionsTest: Option[] = [
-    {
-      key: 'location 1',
-      label: 'Location 1',
-      value: 'Location 1',
-    },
-    {
-      key: 'location 2',
-      label: 'Location 2',
-      value: 'Location 2',
-    },
+  simpleOptions: Option[][] = [
+    [
+      {
+        key: 'location 1',
+        label: 'Location 1',
+        value: 'Location 1',
+      },
+      {
+        key: 'location 2',
+        label: 'Location 2',
+        value: 'Location 2',
+      },
+    ],
+    [
+      {
+        key: 'location 3',
+        label: 'Location 3',
+        value: 'Location 3',
+      },
+      {
+        key: 'location 4',
+        label: 'Location 4',
+        value: 'Location 4',
+      },
+    ],
   ];
 
   optionsTest: Group = {
@@ -125,11 +140,9 @@ export class DemoAutocompleteComponent {
     },
   };
 
-  simpleOptions = this.search.valueChanges.pipe(
+  simpleOptions$ = this.search.valueChanges.pipe(
     startWith<string>(''),
-    map((search) =>
-      this.simpleOptionsTest.filter((option) => option.label?.toLowerCase().includes(search.toLowerCase())),
-    ),
+    map((search) => this._filterNestedOptions(this.simpleOptions, search)),
   );
 
   options: Observable<Group> = this.search.valueChanges.pipe(
