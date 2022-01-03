@@ -6,6 +6,25 @@
         <input [formControl]="search" type="text" />
       </value>
 
+      <!-- <kc-options *kcOptions="let options type getType" [options]="options"> -->
+      <kc-options *kcOptions="let options; type: getType" [options]="options">
+        <div>test: {{ options[0].value }}</div>
+        <input [formControl]="search" type="text" />
+        <kc-option *kcOption="let option" [option]="option"></kc-option>
+      </kc-options>
+
+      <kc-options *kcOptions="let options" [options]="options">
+        <input [formControl]="search" type="text" />
+        <kc-option *kcOption="let option" [option]="option"></kc-option>
+      </kc-options>
+    </kc-autocomplete>
+
+    <h3>Autocomplete simple option</h3>
+    <kc-autocomplete [formControl]="simpleControl" [options]="simpleOptions$" multiple>
+      <value *value>
+        <input [formControl]="search" type="text" />
+      </value>
+
       <kc-options *kcOptions="let options" [options]="options">
         <input [formControl]="search" type="text" />
         <kc-option *kcOption="let option" [option]="option"></kc-option>
@@ -96,21 +115,29 @@
     <kc-autocomplete [formControl]="control" [options]="optionsNested$ | async" multiple>
       <input [formControl]="search" type="text" />
 
-      <kc-group *kcGroup="let options" [options]="options" key="locations">
+      <kc-group *kcGroup="let options" [options]="options" key="locations" multiple>
         <kc-options *kcOptions="let options" [options]="options">
           <kc-option *kcOption="let option" [option]="option"></kc-option>
         </kc-options>
       </kc-group>
 
-      <kc-group *kcGroup="let options" [options]="options" key="waiters">
+      <kc-group *kcGroup="let options" [options]="options" key="waiters" multiple>
         <kc-group *kcGroup="let options" [options]="options" key="users" multiple>
           <kc-options *kcOptions="let options" [options]="options">
+            <div>header</div>
+            <div footer>footer</div>
             <kc-option *kcOption="let option" [option]="option"></kc-option>
           </kc-options>
 
-          test
-
           <kc-options *kcOptions="let options" [options]="options">
+            <kc-option *kcOption="let option" [option]="option"></kc-option>
+          </kc-options>
+        </kc-group>
+
+        <kc-group *kcGroup="let options" [options]="options" key="things">
+          <kc-options *kcOptions="let options" [options]="options">
+            <div>header</div>
+            <div footer>footer</div>
             <kc-option *kcOption="let option" [option]="option"></kc-option>
           </kc-options>
         </kc-group>

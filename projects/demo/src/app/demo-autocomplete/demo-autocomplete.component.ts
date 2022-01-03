@@ -15,40 +15,37 @@ export class DemoAutocompleteComponent {
   search = new FormControl();
   simpleControl = new FormControl('Location 1');
   control = new FormControl({
-    locations: ['Location 1'],
+    locations: 'Location 1',
     waiters: {
-      users: ['Waiter 3'],
+      users: ['Waiter 1', 'Waiter 3'],
+      things: 'Thing 1',
     },
   });
 
-  simpleOptions: Option[][] = [
+  simpleOptions: Option<string, string>[][] = [
     [
       {
-        key: 'location 1',
         label: 'Location 1',
         value: 'Location 1',
       },
       {
-        key: 'location 2',
         label: 'Location 2',
         value: 'Location 2',
       },
     ],
     [
       {
-        key: 'location 3',
         label: 'Location 3',
         value: 'Location 3',
       },
       {
-        key: 'location 4',
         label: 'Location 4',
         value: 'Location 4',
       },
     ],
   ];
 
-  optionsTest: Group = {
+  optionsTest: Group<string, string> = {
     locations: {
       label: 'Locations',
       value: [
@@ -81,7 +78,11 @@ export class DemoAutocompleteComponent {
     },
   };
 
-  optionsNested: Group = {
+  get getType(): Option<string, string> {
+    return null!;
+  }
+
+  optionsNested: Group<string, string> = {
     locations: {
       label: 'Locations',
       value: [
@@ -145,7 +146,7 @@ export class DemoAutocompleteComponent {
     map((search) => this._filterNestedOptions(this.simpleOptions, search)),
   );
 
-  options: Observable<Group> = this.search.valueChanges.pipe(
+  options: Observable<Group<string, string>> = this.search.valueChanges.pipe(
     startWith<string>(''),
     map((search) => this._filterNestedOptions(this.optionsNested, search)),
     // map((search) =>
@@ -166,15 +167,18 @@ export class DemoAutocompleteComponent {
     // tap((tapLog) => console.log(tapLog)),
   );
 
-  private _filterNestedOptions(options: Option[], search: string): Option[];
-  private _filterNestedOptions(options: Option[][], search: string): Option[][];
-  private _filterNestedOptions(options: Group, search: string): Group;
-  private _filterNestedOptions(options: Option[] | Option[][] | Group, search: string): Option[] | Option[][] | Group {
+  private _filterNestedOptions(options: Option<string, string>[], search: string): Option<string, string>[];
+  private _filterNestedOptions(options: Option<string, string>[][], search: string): Option<string, string>[][];
+  private _filterNestedOptions(options: Group<string, string>, search: string): Group<string, string>;
+  private _filterNestedOptions(
+    options: Option<string, string>[] | Option<string, string>[][] | Group<string, string>,
+    search: string,
+  ): Option<string, string>[] | Option<string, string>[][] | Group<string, string> {
     if (this._isOptionChunks(options)) return options.map((option) => this._filterNestedOptions(option, search));
     else if (Array.isArray(options))
       return options.filter((option) => option.label?.toLowerCase().includes(search.toLowerCase()));
     else {
-      return Object.entries(options).reduce<Group>((acc, [key, item]) => {
+      return Object.entries(options).reduce<Group<string, string>>((acc, [key, item]) => {
         if (this._isOptionObject(item))
           acc[key] = {
             ...item,
@@ -189,11 +193,15 @@ export class DemoAutocompleteComponent {
     }
   }
 
-  private _isOptionChunks(option: Option[] | Option[][] | Group): option is Option[][] {
+  private _isOptionChunks(
+    option: Option<string, string>[] | Option<string, string>[][] | Group<string, string>,
+  ): option is Option<string, string>[][] {
     return Array.isArray(option) && Array.isArray(option[0]);
   }
 
-  private _isOptionObject(option: Group | OptionGroup): option is OptionGroup {
+  private _isOptionObject(
+    option: Group<string, string> | OptionGroup<string, string>,
+  ): option is OptionGroup<string, string> {
     return !!option.value;
   }
 }

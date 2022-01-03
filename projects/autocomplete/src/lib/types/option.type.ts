@@ -1,37 +1,37 @@
-import { SelectionModel } from 'dist/selection-model';
+import { MapEmit } from 'dist/selection-model';
 
 /**
  * options type for input options
  */
-export interface Option<T extends string | number = string> {
-  key: string;
-  value: T;
+export interface Option<K, V> {
+  value: V;
+  key?: K;
   label?: string;
 }
 
-export type Group<T extends string | number = string> = {
-  [K: string]: Group<T> | OptionGroup<T>;
+export type Group<K, V> = {
+  [K: string]: Group<K, V> | OptionGroup<K, V>;
 };
 
-export interface OptionGroup<T extends string | number = string> {
-  value: Option<T>[] | Option<T>[][];
+export interface OptionGroup<K, V> {
+  value: Option<K, V>[] | Option<K, V>[][];
   label?: string;
 }
 
 /**
  * options type for output options
  */
-export type OptionValue<T extends number | string = string> = T | T[];
+export type OptionValue<V> = V | V[];
 
-export type OptionGroupValue<T extends number | string> = {
-  [K: string]: OptionValue<T> | OptionGroupValue<T>;
+export type OptionGroupValue<V> = {
+  [K: string]: OptionValue<V> | OptionGroupValue<V>;
 };
 
 /**
  * options for internal structure
  */
-export interface OptionSelection<T extends string | number = string> {
+export interface OptionSelection<K, V> {
+  value: MapEmit<string, Option<K, V> | OptionSelection<K, V>, boolean>;
   key: string;
-  value: SelectionModel<Option<T> | OptionSelection<T>>;
   label?: string;
 }

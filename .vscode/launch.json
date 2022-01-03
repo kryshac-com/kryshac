@@ -13,16 +13,20 @@
       "preLaunchTask": "npm: serve",
       "pathMappings": [
         {
-          "url": "webpack:///projects/app-dashboard/src",
-          "path": "${workspaceFolder}/projects/app-dashboard/src"
+          "url": "webpack:///projects/autocomplete/src/lib",
+          "path": "${workspaceFolder}/projects/autocomplete/src/lib"
         },
         {
-          "url": "webpack:///dist/projects/lib-helpers",
-          "path": "${workspaceFolder}/projects/lib-helpers"
+          "url": "webpack:///projects/selection-model/src/lib",
+          "path": "${workspaceFolder}/projects/selection-model/src/lib"
         },
         {
-          "url": "webpack:///dist/projects/lib-auth",
-          "path": "${workspaceFolder}/projects/lib-auth"
+          "url": "webpack:///projects/autocomplete/src/lib",
+          "path": "${workspaceFolder}/projects/autocomplete/src/lib"
+        },
+        {
+          "url": "webpack:///projects/demo/src",
+          "path": "${workspaceFolder}/projects/demo/src"
         }
       ]
     }

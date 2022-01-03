@@ -9,7 +9,6 @@ import {
   ContentChild,
   ContentChildren,
   Input,
-  OnInit,
   QueryList,
   TemplateRef,
   ViewChild,
@@ -21,7 +20,7 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { Observable, ReplaySubject, Subject, isObservable, takeUntil } from 'rxjs';
 import { first, map, switchMap, tap } from 'rxjs/operators';
 
-import { SelectionModel } from 'dist/selection-model';
+import { MapEmit } from 'dist/selection-model';
 
 import { GroupDirective, KCOptionsDirective, ValueDirective } from './directives';
 import { getValues } from './helpers';
@@ -40,34 +39,35 @@ import { Group, Option, OptionGroupValue, OptionSelection, OptionValue } from '.
     },
     {
       provide: SELECTION,
-      useFactory: (component: AutocompleteComponent) => {
-        console.log('get selection');
-        return component.selectionModel;
-      },
+      useFactory: (component: AutocompleteComponent<unknown, unknown>) => component.selection,
       deps: [forwardRef(() => AutocompleteComponent)],
     },
     {
       provide: VALUE,
-      useFactory: (component: AutocompleteComponent) => component.value,
+      useFactory: (component: AutocompleteComponent<unknown, unknown>) => component.value,
       deps: [forwardRef(() => AutocompleteComponent)],
     },
   ],
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AutocompleteComponent<T extends number | string = string>
-  implements OnInit, AfterContentInit, ControlValueAccessor
-{
+export class AutocompleteComponent<K, V> implements AfterContentInit, ControlValueAccessor {
   @Input()
-  get options(): Observable<Option<T>[] | Option<T>[][] | Group<T>> {
+  get options(): Observable<Option<K, V>[] | Option<K, V>[][] | Group<K, V>> {
     return this._options;
   }
-  set options(options: Observable<Option<T>[] | Option<T>[][] | Group<T>> | Option<T>[] | Option<T>[][] | Group<T>) {
+  set options(
+    options:
+      | Observable<Option<K, V>[] | Option<K, V>[][] | Group<K, V>>
+      | Option<K, V>[]
+      | Option<K, V>[][]
+      | Group<K, V>,
+  ) {
     if (isObservable(options)) this._options = options;
     else this._createObservableOptions(options);
   }
-  private _options!: Observable<Option<T>[] | Option<T>[][] | Group<T>>;
-  private _optionsCache: ReplaySubject<Option<T>[] | Option<T>[][] | Group<T>> | undefined;
+  private _options!: Observable<Option<K, V>[] | Option<K, V>[][] | Group<K, V>>;
+  private _optionsCache: ReplaySubject<Option<K, V>[] | Option<K, V>[][] | Group<K, V>> | undefined;
 
   /**
    * allow user to open selection in modal
@@ -98,17 +98,17 @@ export class AutocompleteComponent<T extends number | string = string>
   @ViewChild('templateRef') templateRef!: TemplateRef<unknown>;
   @ContentChild(ValueDirective, { static: true }) valueTemplate!: ValueDirective;
 
-  @ContentChildren(GroupDirective) groups!: QueryList<GroupDirective<T>>;
-  @ContentChildren(KCOptionsDirective) option!: QueryList<KCOptionsDirective<T>>;
+  @ContentChildren(GroupDirective) groups!: QueryList<GroupDirective<K, V>>;
+  @ContentChildren(KCOptionsDirective) option!: QueryList<KCOptionsDirective<K, V>>;
 
-  set value(val: OptionValue<T> | OptionGroupValue<T>) {
+  set value(val: OptionValue<V> | OptionGroupValue<V>) {
     this._value = val;
     this._cdr.detectChanges();
   }
-  get value(): OptionValue<T> | OptionGroupValue<T> {
+  get value(): OptionValue<V> | OptionGroupValue<V> {
     return this._value;
   }
-  private _value!: OptionValue<T> | OptionGroupValue<T>;
+  private _value!: OptionValue<V> | OptionGroupValue<V>;
   /**
    * panelOpen is for open/close the overlay panel
    */
@@ -118,7 +118,7 @@ export class AutocompleteComponent<T extends number | string = string>
    */
   selectionOpened = false;
 
-  selectionModel!: SelectionModel<Option<T> | OptionSelection<T>>;
+  selection!: MapEmit<K | V | string, Option<K, V> | OptionSelection<K, V>, boolean>;
 
   private _dialogOverlayRef: OverlayRef | undefined;
   private _destroy: Subject<void>;
@@ -136,19 +136,17 @@ export class AutocompleteComponent<T extends number | string = string>
       if (this.groups) this.groups.forEach((group) => group.render(options));
       if (this.option)
         this.option.forEach((group, index) =>
-          group.render(this._getOptions(options as Option<T>[] | Option<T>[][])[index] as unknown as Option<T>[]),
+          group.render(
+            this._getOptions(options as Option<K, V>[] | Option<K, V>[][])[index] as unknown as Option<K, V>[],
+          ),
         );
     });
   }
 
-  ngOnInit(): void {
-    console.log('value', this.value);
-  }
-
-  writeValue(obj: OptionValue<T> | OptionGroupValue<T>): void {
+  writeValue(obj: OptionValue<V> | OptionGroupValue<V>): void {
     this.value = obj;
 
-    if (!this.selectionModel) this._initSelectionModel();
+    if (!this.selection) this._initSelectionModel();
   }
 
   registerOnChange(fn: (value: unknown) => void): void {
@@ -183,10 +181,14 @@ export class AutocompleteComponent<T extends number | string = string>
         /**
          * get first event from selected options to initialize selection model
          */
-        tap((tapLog) => console.log('get selected options', tapLog)),
         first(),
-        map((options) => new SelectionModel<Option<T> | OptionSelection<T>>(options, this.multiple)),
-        tap((selectionModel) => (this.selectionModel = selectionModel)),
+        map((options) => options && (this.multiple ? options : options[0])),
+        map(
+          (options) =>
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+            new MapEmit<K | V | string, Option<K, V> | OptionSelection<K, V>, boolean>(this.multiple, options),
+        ),
+        tap((selection) => (this.selection = selection)),
         switchMap((selectionModel) => selectionModel.changed),
         takeUntil(this._destroy),
       )
@@ -200,15 +202,14 @@ export class AutocompleteComponent<T extends number | string = string>
       });
   }
 
-  private _getOptions(options: Option<T>[] | Option<T>[][]): Option<T>[][] {
+  private _getOptions(options: Option<K, V>[] | Option<K, V>[][]): Option<K, V>[][] {
     if (this._isOptionChunks(options)) return options;
 
     return [options];
   }
 
-  private get _getSelectedOptions(): Observable<Option<T>[] | undefined> {
+  private get _getSelectedOptions(): Observable<[K | V, Option<K, V>][] | undefined> {
     return this.options.pipe(
-      tap((tapLog) => console.log('get function', tapLog)),
       map((options) => {
         if (Array.isArray(options)) {
           if (this._isOptionChunks(options)) {
@@ -227,15 +228,16 @@ export class AutocompleteComponent<T extends number | string = string>
 
         return undefined;
       }),
-      tap((tapLog) => console.log('after', tapLog)),
+      tap((tapLog) => console.log(tapLog)),
+      map((options) => options?.map((option) => [option.key || option.value, option])),
     );
   }
 
-  private _isOptionChunks(option: Option<T>[] | Option<T>[][]): option is Option<T>[][] {
+  private _isOptionChunks(option: Option<K, V>[] | Option<K, V>[][]): option is Option<K, V>[][] {
     return Array.isArray(option[0]);
   }
 
-  private _createObservableOptions(options: Option<T>[] | Option<T>[][] | Group<T>): void {
+  private _createObservableOptions(options: Option<K, V>[] | Option<K, V>[][] | Group<K, V>): void {
     if (!this._optionsCache) {
       this._optionsCache = new ReplaySubject();
       this._options = this._optionsCache;
@@ -267,12 +269,12 @@ export class AutocompleteComponent<T extends number | string = string>
   private _onSelect(): void {
     const valueToEmit = this._getSelectionValues();
 
-    this._value = valueToEmit;
+    this._value = valueToEmit!;
     this._onChange(valueToEmit);
     this._cdr.detectChanges();
   }
 
   private _getSelectionValues() {
-    return getValues<T>(this.selectionModel);
+    return getValues<K | V | string, V>(this.selection);
   }
 }

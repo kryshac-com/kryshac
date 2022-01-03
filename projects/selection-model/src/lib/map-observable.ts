@@ -9,7 +9,7 @@ interface Options {
  * Event emitted when the value of a SelectionModel has changed.
  * @docs-private
  */
-export interface MapEmitChange<K, V, T extends boolean> {
+export interface MapEmitChange<K, V, T extends boolean = false> {
   /** Model that dispatched the event. */
   source: MapEmit<K, V, T>;
   added?: T extends false ? Event<K, V> : Event<K, V>[];
@@ -20,7 +20,7 @@ export interface MapEmitChange<K, V, T extends boolean> {
 /**
  * Class to be used to power selecting one or more options from a list.
  */
-export class MapEmit<K, V, T extends boolean> {
+export class MapEmit<K, V, T extends boolean = false> {
   /** Event emitted when the value has changed. */
   changed: Observable<MapEmitChange<K, V, T>>;
 
@@ -39,7 +39,7 @@ export class MapEmit<K, V, T extends boolean> {
   private _updatedToEmit: Event<K, V> | Event<K, V>[] = [];
 
   /** Cache for the array value of the selected items. */
-  private _selected!: (T extends false ? V : V[]) | null;
+  private _selected!: (T extends false ? V | null : V[]) | null;
 
   constructor(private _multiple: T = false as T, initiallyValues?: T extends false ? [K, V] : [K, V][]) {
     this._map = new Map<K, V>();
@@ -51,21 +51,24 @@ export class MapEmit<K, V, T extends boolean> {
      */
     if (!initiallyValues?.length) return;
 
-    // if (multiple) initiallyValues.forEach(([key, value]) => this._markSet(key, value, { emitEvent: false }));
-    // else this._markSet(initiallyValues[0], initiallyValues[1], { emitEvent: false });
+    if (this._multiple)
+      (initiallyValues as [K, V][]).forEach(([key, value]) => this._markSet(key, value, { emitEvent: false }));
+    else this._markSet((initiallyValues as [K, V])[0], (initiallyValues as [K, V])[1], { emitEvent: false });
 
     // Clear the array in order to avoid firing the change event for preselected values.
     this._setToEmit.length = 0;
   }
 
   /** Selected values. */
-  get selected(): (T extends false ? V : V[]) | null {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
-    if (this._multiple) this._selected = Array.from(this._map.values()) as unknown as any;
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
-    else this._selected = this._map.values().next().value as unknown as any;
+  get selected(): T extends false ? V | null : V[] {
+    if (!this._selected) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
+      if (this._multiple) this._selected = Array.from(this._map.values()) as unknown as any;
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
+      else this._selected = this._map.values().next().value as unknown as any;
+    }
 
-    return this._selected;
+    return this._selected!;
   }
 
   /**
@@ -145,6 +148,13 @@ export class MapEmit<K, V, T extends boolean> {
   /**
    * Determines whether the model does not have a value.
    */
+  isMultiple(): T {
+    return this._multiple;
+  }
+
+  /**
+   * Determines whether the model does not have a value.
+   */
   isEmpty(): boolean {
     return this._map.size === 0;
   }
@@ -215,7 +225,6 @@ export class MapEmit<K, V, T extends boolean> {
      */
     if (options?.emitEvent && !options.emitEvent) return;
 
-    console.log('test');
     if (this._multiple) (this._setToEmit as Event<K, V>[]).push([key, value]);
     else this._setToEmit = [key, value];
   }

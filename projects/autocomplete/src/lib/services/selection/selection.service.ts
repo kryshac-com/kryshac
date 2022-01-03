@@ -9,7 +9,6 @@ export class SelectionService {
   test!: SelectionModel<{ key: string; value: unknown }>;
 
   change(selection: SelectionModel<{ key: string; value: unknown }>) {
-    console.log('change', selection);
     this.test = selection;
   }
 }

@@ -1,6 +1,7 @@
-import { SelectionModel } from '@angular/cdk/collections';
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Inject, Input, OnDestroy } from '@angular/core';
 import { Subject, takeUntil } from 'rxjs';
+
+import { MapEmit } from 'dist/selection-model';
 
 import { SELECTION } from '../../tokens';
 import { Option } from '../../types';
@@ -11,12 +12,15 @@ import { Option } from '../../types';
   styleUrls: ['./kc-option.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KCOptionComponent implements OnDestroy {
-  @Input() option!: Option;
+export class KCOptionComponent<K, V> implements OnDestroy {
+  @Input() option!: Option<K | V, V>;
 
   private _destroy: Subject<void>;
 
-  constructor(@Inject(SELECTION) private _selection: SelectionModel<unknown>, private _cdr: ChangeDetectorRef) {
+  constructor(
+    @Inject(SELECTION) private _selection: MapEmit<K | V, Option<K | V, V>, boolean>,
+    private _cdr: ChangeDetectorRef,
+  ) {
     this._destroy = new Subject();
 
     this._selection.changed.pipe(takeUntil(this._destroy)).subscribe(() => this._cdr.markForCheck());
@@ -28,11 +32,12 @@ export class KCOptionComponent implements OnDestroy {
   }
 
   get selected(): boolean {
-    return this._selection.isSelected(this.option);
+    return this._selection.has(this.option.key || this.option.value);
   }
 
   click(): void {
-    if (this._selection.isSelected(this.option)) this._selection.deselect(this.option);
-    else this._selection.select(this.option);
+    if (this._selection.has(this.option.key || this.option.value))
+      this._selection.delete(this.option.key || this.option.value);
+    else this._selection.set(this.option.key || this.option.value, this.option);
   }
 }

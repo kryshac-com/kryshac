@@ -12,7 +12,7 @@ import {
   forwardRef,
 } from '@angular/core';
 
-import { SelectionModel } from 'dist/selection-model';
+import { MapEmit } from 'dist/selection-model';
 
 import { GroupDirective, KCOptionsDirective } from '../../directives';
 import { SELECTION, VALUE } from '../../tokens';
@@ -21,25 +21,23 @@ import { Group, Option, OptionGroup, OptionGroupValue, OptionSelection, OptionVa
 @Component({
   selector: 'kc-group',
   templateUrl: './group.component.html',
-  styleUrls: ['./group.component.css'],
+  styleUrls: ['./group.component.scss'],
   providers: [
     {
       provide: SELECTION,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      useFactory: (autocomplete: GroupComponent<any>) => autocomplete.selectionModel,
+      useFactory: (autocomplete: GroupComponent<unknown, unknown>) => autocomplete.selection.value,
       deps: [forwardRef(() => GroupComponent)],
     },
     {
       provide: VALUE,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      useFactory: (component: GroupComponent<any>) => component.value,
+      useFactory: (component: GroupComponent<unknown, unknown>) => component.value,
       deps: [forwardRef(() => GroupComponent)],
     },
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class GroupComponent<T extends number | string> implements OnInit, AfterContentInit {
-  @Input() options!: Group<T>;
+export class GroupComponent<K, V> implements OnInit, AfterContentInit {
+  @Input() options!: Group<K, V>;
   @Input() key!: string;
 
   @Input()
@@ -51,17 +49,22 @@ export class GroupComponent<T extends number | string> implements OnInit, AfterC
   }
   private _multiple = false;
 
-  @ContentChildren(GroupDirective) groups!: QueryList<GroupDirective<T>>;
-  @ContentChildren(KCOptionsDirective) option!: QueryList<KCOptionsDirective<T>>;
+  @ContentChildren(GroupDirective) groups!: QueryList<GroupDirective<K, V>>;
+  @ContentChildren(KCOptionsDirective) option!: QueryList<KCOptionsDirective<K, V>>;
 
-  selectionModel!: SelectionModel<Option<T> | OptionSelection<T>>;
+  selection!: {
+    key: string;
+    value: MapEmit<string, Option<K, V> | OptionSelection<K, V>, boolean>;
+  };
 
   constructor(
-    @SkipSelf() @Inject(SELECTION) private _selection: SelectionModel<Option<T> | OptionSelection<T>>,
-    @SkipSelf() @Inject(VALUE) private _value: OptionValue<T> | OptionGroupValue<T>,
+    @SkipSelf()
+    @Inject(SELECTION)
+    private _selection: MapEmit<string, OptionSelection<K, V>, boolean>,
+    @SkipSelf() @Inject(VALUE) private _value: OptionValue<V> | OptionGroupValue<V>,
   ) {}
 
-  get value(): OptionValue<T> | OptionGroupValue<T> {
+  get value(): OptionValue<V> | OptionGroupValue<V> {
     if (this._isOptionGroupValue(this._value)) return this._value[this.key];
 
     return this.value;
@@ -77,36 +80,34 @@ export class GroupComponent<T extends number | string> implements OnInit, AfterC
   }
 
   private _initSelection(): void {
-    this.selectionModel = this._getSelection();
+    this.selection = this._getSelection();
 
-    this._selection.select({
-      key: this.key,
-      value: this.selectionModel,
-    });
+    this._selection.set(this.key, this.selection);
 
-    this.selectionModel.changed.subscribe(() => {
-      if (this._selection.isSelected({ key: this.key, value: [] as unknown as T })) {
-        this._selection.update();
+    this.selection.value.changed.subscribe(() => {
+      if (this._selection.has(this.key)) {
+        this._selection.update(this.key, this.selection);
       } else {
-        this._selection.select({
-          key: this.key,
-          value: this.selectionModel,
-        });
+        this._selection.set(this.key, this.selection);
       }
     });
   }
 
-  private _getSelection(): SelectionModel<Option<T> | OptionSelection<T>> {
-    if (this._selection.isSelected({ key: this.key, value: [] as unknown as T }))
-      return this._selection.get({ key: this.key, value: [] as unknown as T })!.value as SelectionModel<
-        Option<T> | OptionSelection<T>
-      >;
+  private _getSelection(): { key: string; value: MapEmit<string, Option<K, V> | OptionSelection<K, V>, boolean> } {
+    if (this._selection.has(this.key)) return this._selection.get(this.key)!;
 
     const option = this._getOption();
-    return new SelectionModel<Option<T> | OptionSelection<T>>(option, this.multiple);
+    const options = option && (this.multiple ? option : option[0]);
+
+    const value = new MapEmit<string, Option<K, V> | OptionSelection<K, V>, boolean>(this.multiple, options);
+
+    return {
+      key: this.key,
+      value,
+    };
   }
 
-  private _getOption(): Option<T>[] | undefined {
+  private _getOption(): [string, Option<K, V>][] | undefined {
     if (this._isOptionGroup(this.options[this.key]))
       return this._getOptions(this.options)
         .flat()
@@ -114,20 +115,21 @@ export class GroupComponent<T extends number | string> implements OnInit, AfterC
           if (Array.isArray(this.value)) return this.value.some((value) => value === option.value);
 
           return this.value === option.value;
-        });
+        })
+        .map((option) => [(option.key || option.value) as unknown as string, option]);
 
     return undefined;
   }
 
-  private _getGroup(options: Group<T>): Group<T> {
-    return options[this.key] as Group<T>;
+  private _getGroup(options: Group<K, V>): Group<K, V> {
+    return options[this.key] as Group<K, V>;
   }
 
-  private _getOptionGroup(options: Group<T>): OptionGroup<T> {
-    return options[this.key] as OptionGroup<T>;
+  private _getOptionGroup(options: Group<K, V>): OptionGroup<K, V> {
+    return options[this.key] as OptionGroup<K, V>;
   }
 
-  private _getOptions(options: Group<T>): Option<T>[][] {
+  private _getOptions(options: Group<K, V>): Option<K, V>[][] {
     const value = this._getOptionGroup(options).value;
 
     if (this._isOptionChunks(value)) return value;
@@ -135,15 +137,15 @@ export class GroupComponent<T extends number | string> implements OnInit, AfterC
     return [value];
   }
 
-  private _isOptionGroup(option: Group<T> | OptionGroup<T>): option is OptionGroup<T> {
+  private _isOptionGroup(option: Group<K, V> | OptionGroup<K, V>): option is OptionGroup<K, V> {
     return !!option.value;
   }
 
-  private _isOptionGroupValue(value: OptionValue<T> | OptionGroupValue<T>): value is OptionGroupValue<T> {
+  private _isOptionGroupValue(value: OptionValue<V> | OptionGroupValue<V>): value is OptionGroupValue<V> {
     return typeof value === 'object' && !Array.isArray(value);
   }
 
-  private _isOptionChunks(option: Option<T>[] | Option<T>[][]): option is Option<T>[][] {
+  private _isOptionChunks(option: Option<K, V>[] | Option<K, V>[][]): option is Option<K, V>[][] {
     return Array.isArray(option[0]);
   }
 }

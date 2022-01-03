@@ -17,12 +17,12 @@ import { Option } from '../../types';
   styleUrls: ['./kc-options.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KCOptionsComponent<T extends number | string> implements OnInit {
-  @Input() public options!: Option<T>[];
+export class KCOptionsComponent<K, V> implements OnInit {
+  @Input() public options!: Option<K, V>[];
   /**
    *  { static: true } needs to be set when you want to access the ViewChild in ngOnInit.
    */
-  @ContentChild(KCOptionDirective, { static: true }) public optionTemplate!: KCOptionDirective;
+  @ContentChild(KCOptionDirective, { static: true }) public optionTemplate!: KCOptionDirective<K, V>;
   @ViewChild('outlet', { static: true, read: ViewContainerRef }) private _outlet!: ViewContainerRef;
 
   ngOnInit(): void {

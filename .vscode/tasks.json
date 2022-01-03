@@ -2,9 +2,6 @@
   "version": "2.0.0",
   "tasks": [
     {
-      /**
-       *  label is the name of the task
-       */
       "label": "npm: serve",
       "detail": "ng serve --host 0.0.0.0 --port 4200",
       "type": "npm",
@@ -14,10 +11,7 @@
         "owner": "typescript",
         "source": "ts",
         "applyTo": "closedDocuments",
-        "fileLocation": [
-          "relative",
-          "${cwd}"
-        ],
+        "fileLocation": ["relative", "${workspaceRoot}"],
         "pattern": "$tsc",
         "background": {
           "activeOnStart": true,
@@ -25,9 +19,6 @@
             "regexp": "(.*?)"
           },
           "endsPattern": {
-            /**
-             *  this is the pattern when the task is finished
-             */
             "regexp": "Compiled |Failed to compile."
           }
         }

@@ -3,13 +3,7 @@ import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 
 import { AutocompleteComponent } from './autocomplete.component';
-import {
-  GroupComponent,
-  KCOptionComponent,
-  KCOptionsComponent,
-  OptionsGroupComponent,
-  ValueComponent,
-} from './components';
+import { GroupComponent, KCOptionComponent, KCOptionsComponent, ValueComponent } from './components';
 import { GroupDirective, KCOptionDirective, KCOptionsDirective, ValueDirective } from './directives';
 
 @NgModule({
@@ -21,7 +15,6 @@ import { GroupDirective, KCOptionDirective, KCOptionsDirective, ValueDirective }
     KCOptionDirective,
     KCOptionsComponent,
     KCOptionsDirective,
-    OptionsGroupComponent,
     GroupDirective,
     GroupComponent,
   ],
@@ -34,7 +27,6 @@ import { GroupDirective, KCOptionDirective, KCOptionsDirective, ValueDirective }
     KCOptionDirective,
     KCOptionsComponent,
     KCOptionsDirective,
-    OptionsGroupComponent,
     GroupDirective,
     GroupComponent,
   ],
