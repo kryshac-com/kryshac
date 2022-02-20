@@ -2,52 +2,69 @@ import { MapEmit } from 'dist/selection-model';
 
 import { Option, OptionGroupValue, OptionSelection, OptionValue } from '../types';
 
-export function getValues<K, V>(
-  values: MapEmit<K | string, Option<K, V> | OptionSelection<K, V>, boolean>,
-): OptionValue<V> | OptionGroupValue<V> | undefined {
-  if (Array.isArray(values.selected)) {
-    return values.selected.reduce<V[] | OptionGroupValue<V> | undefined>((acc, item) => {
-      if (checkIsOptionValue(item)) {
-        const value = [...(acc as []), item.value];
+type Options<K, V> = OptionSelection<K, V> | Option<K, V>;
+type OptionsValue<V> = OptionGroupValue<V> | OptionValue<V>;
+type Item<K, V> = [K | V, Options<K, V>];
 
-        if (!value.length) return;
+export function getValues<K, V>(values: OptionSelection<K, V>): OptionsValue<V> | undefined {
+  /**
+   * check if map is multiple
+   * is is multiple we need to iterate over all values
+   */
+  if (values.isMultiple()) {
+    return (values.selectedEntries as unknown as Item<K, V>[]).reduce<OptionsValue<V> | undefined>(
+      (acc, [key, item]) => {
+        if (checkIsOption(item)) return [...(acc as []), item.value];
+        /**
+         * check if accumulator is an array that means is the first iteration
+         * when we have a nested group we change the accumulator to an object
+         */
+        if (Array.isArray(acc)) acc = {};
+        /**
+         * get value from nested group
+         */
+        const value = getValues(item);
+        /**
+         * when the group has no value we return the accumulator
+         */
+        if (checkIsEmpty(value)) return acc;
 
-        return value;
-      }
-      /**
-       * change the accumulator to an object and check if is the first time
-       * because next time will be and object and we not need to create a new object
-       */
-      if (Array.isArray(acc)) acc = {};
-
-      const value = getValues(item.value);
-
-      if (!value) return acc;
-
-      return {
-        ...acc,
-        [item.key]: value,
-      };
-    }, []);
-  } else if (checkIsOptionSelection(values.selected)) {
-    const value = getValues(values.selected.value);
-
-    if (!value) return;
-
-    if (Array.isArray(value) && !value.length) return;
-
-    return {
-      [values.selected.key]: value,
-    };
+        return {
+          ...acc,
+          [key as unknown as string]: value,
+        };
+      },
+      [],
+    );
   }
 
-  return values.selected?.value;
+  if (!values.selectedEntries) return;
+
+  const [key, item] = values.selectedEntries as Item<K, V>;
+
+  if (checkIsOption(item)) return item.value;
+
+  const value = getValues(item);
+
+  if (checkIsEmpty(value)) return;
+
+  return { [key as unknown as string]: value };
 }
 
-function checkIsOptionValue<K, V>(item: Option<K, V> | OptionSelection<K, V>): item is Option<K, V> {
-  return !(item.value instanceof MapEmit);
+// eslint-disable-next-line @typescript-eslint/ban-types
+function checkIsEmpty<V>(item: OptionsValue<V> | undefined): item is undefined | [] | {} {
+  /**
+   * check if items is undefined
+   */
+  if (!item) return true;
+  /**
+   * check if array or object and is empty
+   */
+  if (!Object.keys(item).length) return true;
+
+  return false;
 }
 
-function checkIsOptionSelection<K, V>(item: V | Option<K, V> | OptionSelection<K, V>): item is OptionSelection<K, V> {
-  return (item as OptionSelection<K, V>)?.value instanceof MapEmit;
+function checkIsOption<K, V>(item: Options<K, V>): item is Option<K, V> {
+  return !(item instanceof MapEmit);
 }

@@ -25,7 +25,7 @@ import { Group, Option, OptionGroup, OptionGroupValue, OptionSelection, OptionVa
   providers: [
     {
       provide: SELECTION,
-      useFactory: (autocomplete: GroupComponent<unknown, unknown>) => autocomplete.selection.value,
+      useFactory: (autocomplete: GroupComponent<unknown, unknown>) => autocomplete.selection,
       deps: [forwardRef(() => GroupComponent)],
     },
     {
@@ -52,10 +52,7 @@ export class GroupComponent<K, V> implements OnInit, AfterContentInit {
   @ContentChildren(GroupDirective) groups!: QueryList<GroupDirective<K, V>>;
   @ContentChildren(KCOptionsDirective) option!: QueryList<KCOptionsDirective<K, V>>;
 
-  selection!: {
-    key: string;
-    value: MapEmit<string, Option<K, V> | OptionSelection<K, V>, boolean>;
-  };
+  selection!: MapEmit<string | K | V, Option<K, V> | OptionSelection<K, V>, boolean>;
 
   constructor(
     @SkipSelf()
@@ -84,7 +81,7 @@ export class GroupComponent<K, V> implements OnInit, AfterContentInit {
 
     this._selection.set(this.key, this.selection);
 
-    this.selection.value.changed.subscribe(() => {
+    this.selection.changed.subscribe(() => {
       if (this._selection.has(this.key)) {
         this._selection.update(this.key, this.selection);
       } else {
@@ -93,18 +90,13 @@ export class GroupComponent<K, V> implements OnInit, AfterContentInit {
     });
   }
 
-  private _getSelection(): { key: string; value: MapEmit<string, Option<K, V> | OptionSelection<K, V>, boolean> } {
+  private _getSelection(): MapEmit<string | K | V, Option<K, V> | OptionSelection<K, V>, boolean> {
     if (this._selection.has(this.key)) return this._selection.get(this.key)!;
 
     const option = this._getOption();
     const options = option && (this.multiple ? option : option[0]);
 
-    const value = new MapEmit<string, Option<K, V> | OptionSelection<K, V>, boolean>(this.multiple, options);
-
-    return {
-      key: this.key,
-      value,
-    };
+    return new MapEmit<string, Option<K, V> | OptionSelection<K, V>, boolean>(this.multiple, options);
   }
 
   private _getOption(): [string, Option<K, V>][] | undefined {

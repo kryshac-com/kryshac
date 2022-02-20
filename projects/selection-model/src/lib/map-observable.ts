@@ -40,6 +40,7 @@ export class MapEmit<K, V, T extends boolean = false> {
 
   /** Cache for the array value of the selected items. */
   private _selected!: (T extends false ? V | null : V[]) | null;
+  private _selectedEntries!: (T extends false ? [K, V] | null : [K, V][]) | null;
 
   constructor(private _multiple: T = false as T, initiallyValues?: T extends false ? [K, V] : [K, V][]) {
     this._map = new Map<K, V>();
@@ -64,11 +65,23 @@ export class MapEmit<K, V, T extends boolean = false> {
     if (!this._selected) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
       if (this._multiple) this._selected = Array.from(this._map.values()) as unknown as any;
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
-      else this._selected = this._map.values().next().value as unknown as any;
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      else this._selected = this._map.values().next().value;
     }
 
     return this._selected!;
+  }
+
+  /** Selected values. */
+  get selectedEntries(): T extends false ? [K, V] | null : [K, V][] {
+    if (!this._selectedEntries) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
+      if (this._multiple) this._selectedEntries = Array.from(this._map.entries()) as unknown as any;
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      else this._selectedEntries = this._map.entries().next().value;
+    }
+
+    return this._selectedEntries!;
   }
 
   /**
@@ -186,6 +199,7 @@ export class MapEmit<K, V, T extends boolean = false> {
   private _emitChangeEvent() {
     // Clear the selected values so they can be re-cached.
     this._selected = null;
+    this._selectedEntries = null;
 
     if (this._setToEmit || this._updatedToEmit || this._deletedToEmit) {
       this._changed.next({
@@ -248,15 +262,9 @@ export class MapEmit<K, V, T extends boolean = false> {
 
     const value = this.get(key)!;
     /**
-     * deprecated
-     */
-    // eslint-disable-next-line max-len
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
-    const option = (value as unknown as any).value;
-    /**
      * check if option is instance of MapEmit we need to delete nested options
      */
-    if (option instanceof MapEmit) option.clear();
+    if (value instanceof MapEmit) value.clear();
 
     this._map.delete(key);
 

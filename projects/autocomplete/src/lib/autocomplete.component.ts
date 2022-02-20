@@ -18,7 +18,7 @@ import {
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { Observable, ReplaySubject, Subject, isObservable, takeUntil } from 'rxjs';
-import { first, map, switchMap, tap } from 'rxjs/operators';
+import { first, map, skip, switchMap, tap } from 'rxjs/operators';
 
 import { MapEmit } from 'dist/selection-model';
 
@@ -117,7 +117,7 @@ export class AutocompleteComponent<K, V> implements AfterContentInit, ControlVal
    * selectionOpened variable is for check if the overlay or dialog is open
    */
   selectionOpened = false;
-  selection!: MapEmit<K | V | string, Option<K, V> | OptionSelection<K, V>, boolean>;
+  selection!: OptionSelection<K, V>;
 
   private _dialogOverlayRef: OverlayRef | undefined;
   private _destroy: Subject<void>;
@@ -184,13 +184,10 @@ export class AutocompleteComponent<K, V> implements AfterContentInit, ControlVal
          */
         first(),
         map((options) => options && (this.multiple ? options : options[0])),
-        map(
-          (options) =>
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            new MapEmit<K | V | string, Option<K, V> | OptionSelection<K, V>, boolean>(this.multiple, options),
-        ),
+        map((options) => new MapEmit<K | V, Option<K, V> | OptionSelection<K, V>, boolean>(this.multiple, options)),
         tap((selection) => (this.selection = selection)),
         switchMap((selectionModel) => selectionModel.changed),
+        skip(4),
         takeUntil(this._destroy),
       )
       .subscribe(() => {
@@ -267,14 +264,10 @@ export class AutocompleteComponent<K, V> implements AfterContentInit, ControlVal
 
   /** Invoked when an option is clicked. */
   private _onSelect(): void {
-    const valueToEmit = this._getSelectionValues();
+    const valueToEmit = getValues<K, V>(this.selection);
 
     this._value = valueToEmit!;
     this._onChange(valueToEmit);
     this._cdr.detectChanges();
-  }
-
-  private _getSelectionValues() {
-    return getValues<K | V | string, V>(this.selection);
   }
 }

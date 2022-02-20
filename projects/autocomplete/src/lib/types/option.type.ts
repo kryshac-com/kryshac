@@ -30,8 +30,4 @@ export type OptionGroupValue<V> = {
 /**
  * options for internal structure
  */
-export interface OptionSelection<K, V> {
-  value: MapEmit<string, Option<K, V> | OptionSelection<K, V>, boolean>;
-  key: string;
-  label?: string;
-}
+export type OptionSelection<K, V> = MapEmit<string | K | V, Option<K, V> | OptionSelection<K, V>, boolean>;
