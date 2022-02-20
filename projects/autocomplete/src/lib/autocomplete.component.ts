@@ -18,7 +18,7 @@ import {
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { Observable, ReplaySubject, Subject, isObservable, takeUntil } from 'rxjs';
-import { first, map, skip, switchMap, tap } from 'rxjs/operators';
+import { first, map, switchMap, tap } from 'rxjs/operators';
 
 import { MapEmit } from 'dist/selection-model';
 
@@ -187,7 +187,6 @@ export class AutocompleteComponent<K, V> implements AfterContentInit, ControlVal
         map((options) => new MapEmit<K | V, Option<K, V> | OptionSelection<K, V>, boolean>(this.multiple, options)),
         tap((selection) => (this.selection = selection)),
         switchMap((selectionModel) => selectionModel.changed),
-        skip(4),
         takeUntil(this._destroy),
       )
       .subscribe(() => {
