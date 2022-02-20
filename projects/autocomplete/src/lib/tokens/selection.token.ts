@@ -1,4 +1,5 @@
-import { SelectionModel } from '@angular/cdk/collections';
 import { InjectionToken } from '@angular/core';
 
-export const SELECTION = new InjectionToken<SelectionModel<unknown>>('SELECTION');
+import { MapEmit } from 'dist/selection-model';
+
+export const SELECTION = new InjectionToken<MapEmit<unknown, unknown>>('SELECTION');

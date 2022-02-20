@@ -1,12 +1,19 @@
 <div class="panel">
   <div>
-    <h3>Autocomplete simple option</h3>
+    <app-simple [group]="group"></app-simple>
+    <app-multiple [group]="group"></app-multiple>
+    <app-options-type [group]="group"></app-options-type>
+    <app-groups [group]="group"></app-groups>
+    <app-search [group]="group"></app-search>
+    <app-search-group [group]="group"></app-search-group>
+    <app-nested [group]="group"></app-nested>
+    <app-nested-multiple [group]="group"></app-nested-multiple>
+    <!-- <h3>Autocomplete simple option</h3>
     <kc-autocomplete [formControl]="simpleControl" [options]="(simpleOptions$ | async)!">
       <value *value>
         <input [formControl]="search" type="text" />
       </value>
 
-      <!-- <kc-options *kcOptions="let options type getType" [options]="options"> -->
       <kc-options *kcOptions="let options; type: getType" [options]="options">
         <div>test: {{ options[0].value }}</div>
         <input [formControl]="search" type="text" />
@@ -17,9 +24,9 @@
         <input [formControl]="search" type="text" />
         <kc-option *kcOption="let option" [option]="option"></kc-option>
       </kc-options>
-    </kc-autocomplete>
+    </kc-autocomplete> -->
 
-    <h3>Autocomplete simple option</h3>
+    <!-- <h3>Autocomplete simple option</h3>
     <kc-autocomplete [formControl]="simpleControl" [options]="simpleOptions$" multiple>
       <value *value>
         <input [formControl]="search" type="text" />
@@ -34,7 +41,7 @@
         <input [formControl]="search" type="text" />
         <kc-option *kcOption="let option" [option]="option"></kc-option>
       </kc-options>
-    </kc-autocomplete>
+    </kc-autocomplete> -->
 
     <!-- <h3>Autocomplete simple option (observable)</h3>
     <kc-autocomplete [formControl]="control" [options]="simpleOptions">
@@ -111,7 +118,7 @@
       </kc-options-group>
     </kc-autocomplete> -->
 
-    <h3>Autocomplete group multiple nested</h3>
+    <!-- <h3>Autocomplete group multiple nested</h3>
     <kc-autocomplete [formControl]="control" [options]="optionsNested$ | async" multiple>
       <input [formControl]="search" type="text" />
 
@@ -142,7 +149,7 @@
           </kc-options>
         </kc-group>
       </kc-group>
-    </kc-autocomplete>
+    </kc-autocomplete> -->
 
     <!--
     <kc-autocomplete [formControl]="control"  [options]="(options | async)!" dialog>
@@ -178,7 +185,6 @@
     </kc-autocomplete> -->
   </div>
   <div class="panel__result">
-    <pre>{{ simpleControl.value | json }}</pre>
-    <pre>{{ control.value | json }}</pre>
+    <pre>{{ group.value | json }}</pre>
   </div>
 </div>

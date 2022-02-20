@@ -1,0 +1,31 @@
+<h3>Nested (error)</h3>
+
+<kc-autocomplete [formControl]="control" [options]="options">
+  <kc-group *kcGroup="let options" [options]="options" key="locations">
+    <kc-options *kcOptions="let options" [options]="options">
+      <kc-option *kcOption="let option" [option]="option"></kc-option>
+    </kc-options>
+  </kc-group>
+
+  <kc-group *kcGroup="let options" [options]="options" key="waiters" multiple>
+    <kc-group *kcGroup="let options" [options]="options" key="users" multiple>
+      <kc-options *kcOptions="let options" [options]="options">
+        <div>header</div>
+        <div footer>footer</div>
+        <kc-option *kcOption="let option" [option]="option"></kc-option>
+      </kc-options>
+
+      <kc-options *kcOptions="let options" [options]="options">
+        <kc-option *kcOption="let option" [option]="option"></kc-option>
+      </kc-options>
+    </kc-group>
+
+    <kc-group *kcGroup="let options" [options]="options" key="things">
+      <kc-options *kcOptions="let options" [options]="options">
+        <div>header</div>
+        <div footer>footer</div>
+        <kc-option *kcOption="let option" [option]="option"></kc-option>
+      </kc-options>
+    </kc-group>
+  </kc-group>
+</kc-autocomplete>

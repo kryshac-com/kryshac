@@ -1,17 +1,23 @@
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { Observable, map, startWith } from 'rxjs';
 
-import { Group, Option, OptionGroup } from 'dist/autocomplete';
+import { Group, Option, OptionGroup } from '@kryshac/autocomplete';
 
 @Component({
   selector: 'app-demo-autocomplete',
   templateUrl: './demo-autocomplete.component.html',
   styleUrls: ['./demo-autocomplete.component.scss'],
-  changeDetection: ChangeDetectionStrategy.Default,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DemoAutocompleteComponent {
+  group: FormGroup;
+
+  constructor(private _fb: FormBuilder) {
+    this.group = this._fb.group({});
+  }
+
   search = new FormControl();
   simpleControl = new FormControl('Location 1');
   control = new FormControl({

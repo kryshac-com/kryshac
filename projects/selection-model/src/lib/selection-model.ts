@@ -33,10 +33,8 @@ export class SelectionModel<T extends { value: unknown; key?: unknown }> {
      */
     if (!initiallySelectedValues?.length) return;
 
-    if (this._multiple)
-      initiallySelectedValues.forEach((value) => this._markSelected(value));
-    else
-      this._markSelected(initiallySelectedValues[0]);
+    if (this._multiple) initiallySelectedValues.forEach((value) => this._markSelected(value));
+    else this._markSelected(initiallySelectedValues[0]);
 
     // Clear the array in order to avoid firing the change event for preselected values.
     this._selectedToEmit.length = 0;
@@ -44,8 +42,7 @@ export class SelectionModel<T extends { value: unknown; key?: unknown }> {
 
   /** Selected values. */
   get selected(): T[] {
-    if (!this._selected)
-      this._selected = Array.from(this._selection.values());
+    if (!this._selected) this._selected = Array.from(this._selection.values());
 
     return this._selected;
   }
@@ -60,9 +57,9 @@ export class SelectionModel<T extends { value: unknown; key?: unknown }> {
 
     this.changed.next({
       source: this,
-        added: this._selectedToEmit,
-        removed: this._deselectedToEmit,
-    })
+      added: this._selectedToEmit,
+      removed: this._deselectedToEmit,
+    });
   }
 
   /**
@@ -181,6 +178,8 @@ export class SelectionModel<T extends { value: unknown; key?: unknown }> {
   /** Deselects a value. */
   private _unMarkSelected(value: T) {
     if (!this.isSelected(value)) return;
+
+    // check if value is instance of SelectionModel
 
     this._selection.delete(value.key || value.value);
 

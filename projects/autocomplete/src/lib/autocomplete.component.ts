@@ -94,12 +94,12 @@ export class AutocompleteComponent<K, V> implements AfterContentInit, ControlVal
   /**
    * get the template for the overlay that contains ng-content
    */
-  @ViewChild('valueRef', { static: true, read: ViewContainerRef }) private _valueRef!: ViewContainerRef;
+  @ViewChild('valueRef', { read: ViewContainerRef }) private _valueRef!: ViewContainerRef;
   @ViewChild('templateRef') templateRef!: TemplateRef<unknown>;
-  @ContentChild(ValueDirective, { static: true }) valueTemplate!: ValueDirective;
 
-  @ContentChildren(GroupDirective) groups!: QueryList<GroupDirective<K, V>>;
-  @ContentChildren(KCOptionsDirective) option!: QueryList<KCOptionsDirective<K, V>>;
+  @ContentChild(ValueDirective) private _valueTemplate?: ValueDirective;
+  @ContentChildren(GroupDirective) private _groups!: QueryList<GroupDirective<K, V>>;
+  @ContentChildren(KCOptionsDirective) private _option!: QueryList<KCOptionsDirective<K, V>>;
 
   set value(val: OptionValue<V> | OptionGroupValue<V>) {
     this._value = val;
@@ -117,7 +117,6 @@ export class AutocompleteComponent<K, V> implements AfterContentInit, ControlVal
    * selectionOpened variable is for check if the overlay or dialog is open
    */
   selectionOpened = false;
-
   selection!: MapEmit<K | V | string, Option<K, V> | OptionSelection<K, V>, boolean>;
 
   private _dialogOverlayRef: OverlayRef | undefined;
@@ -133,14 +132,16 @@ export class AutocompleteComponent<K, V> implements AfterContentInit, ControlVal
 
   ngAfterContentInit(): void {
     this.options.pipe(takeUntil(this._destroy)).subscribe((options) => {
-      if (this.groups) this.groups.forEach((group) => group.render(options));
-      if (this.option)
-        this.option.forEach((group, index) =>
+      if (this._groups) this._groups.forEach((group) => group.render(options));
+      if (this._option)
+        this._option.forEach((group, index) =>
           group.render(
             this._getOptions(options as Option<K, V>[] | Option<K, V>[][])[index] as unknown as Option<K, V>[],
           ),
         );
     });
+
+    if (this._valueTemplate) this._valueRef.createEmbeddedView(this._valueTemplate.template);
   }
 
   writeValue(obj: OptionValue<V> | OptionGroupValue<V>): void {
@@ -228,7 +229,6 @@ export class AutocompleteComponent<K, V> implements AfterContentInit, ControlVal
 
         return undefined;
       }),
-      tap((tapLog) => console.log(tapLog)),
       map((options) => options?.map((option) => [option.key || option.value, option])),
     );
   }

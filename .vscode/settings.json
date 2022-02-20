@@ -1,7 +1,7 @@
 {
   "editor.rulers": [120],
   "files.exclude": {
-    "**/dist": true
+    "**/dist":false
   },
   "editor.formatOnSave": false,
   "editor.codeActionsOnSave": {
@@ -31,4 +31,5 @@
   "css.validate": false,
   "less.validate": false,
   "scss.validate": false,
+  "angular.log": "verbose",
 }

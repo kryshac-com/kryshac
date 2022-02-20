@@ -1,0 +1,9 @@
+<h3>Simple</h3>
+
+<kc-autocomplete [formControl]="control" [options]="options">
+  <value *value></value>
+
+  <kc-options *kcOptions="let options" [options]="options">
+    <kc-option *kcOption="let option" [option]="option"></kc-option>
+  </kc-options>
+</kc-autocomplete>

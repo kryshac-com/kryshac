@@ -1,9 +1,7 @@
 <div cdk-overlay-origin #origin="cdkOverlayOrigin" (click)="open()">
   <span *ngIf="!value; else valueRef">Place holder</span>
 
-  <ng-template #valueRef>
-    <span>{{ value }}</span>
-  </ng-template>
+  <ng-template #valueRef></ng-template>
 
   <ng-content></ng-content>
 

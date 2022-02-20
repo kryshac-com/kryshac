@@ -7,35 +7,23 @@
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "noImplicitOverride": true,
-    "paths": {
-      "@kryshac/forms": [
-        "dist/forms/forms",
-        "dist/forms"
-      ],
-      "@kryshac/autocomplete": [
-        "dist/autocomplete/autocomplete",
-        "dist/autocomplete"
-      ],
-      "selection": [
-        "dist/selection/selection",
-        "dist/selection"
-      ]
-    },
     "noPropertyAccessFromIndexSignature": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "sourceMap": true,
-    "declaration": false,
+    "declaration": true,
     "downlevelIteration": true,
     "experimentalDecorators": true,
     "moduleResolution": "node",
     "importHelpers": true,
     "target": "es2017",
     "module": "es2020",
-    "lib": [
-      "es2020",
-      "dom"
-    ]
+    "lib": ["es2020", "dom"],
+    "paths": {
+      "@kryshac/forms": ["dist/forms/forms", "dist/forms"],
+      "@kryshac/autocomplete": ["projects/autocomplete/src/public-api.ts"],
+      "@kryshac/selection": ["dist/selection/selection", "dist/selection"]
+    },
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,

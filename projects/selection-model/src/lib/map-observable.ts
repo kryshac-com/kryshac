@@ -247,6 +247,16 @@ export class MapEmit<K, V, T extends boolean = false> {
     if (!this.has(key)) return;
 
     const value = this.get(key)!;
+    /**
+     * deprecated
+     */
+    // eslint-disable-next-line max-len
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
+    const option = (value as unknown as any).value;
+    /**
+     * check if option is instance of MapEmit we need to delete nested options
+     */
+    if (option instanceof MapEmit) option.clear();
 
     this._map.delete(key);
 
