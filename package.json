@@ -7,7 +7,9 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "lint": "ng lint"
+    "lint": "ng lint",
+    "test:rxjs": "ng test rxjs",
+    "coverage:rxjs": "http-server ./coverage/rxjs -p 4200"
   },
   "private": true,
   "dependencies": {
@@ -43,6 +45,7 @@
     "eslint-plugin-import": "^2.25.4",
     "eslint-plugin-sort-export-all": "^1.2.1",
     "eslint-plugin-unused-imports": "^2.0.0",
+    "http-server": "^14.1.0",
     "jasmine-core": "~4.0.0",
     "karma": "~6.3.16",
     "karma-chrome-launcher": "~3.1.0",

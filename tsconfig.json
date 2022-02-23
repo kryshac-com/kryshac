@@ -20,10 +20,11 @@
     "module": "es2020",
     "lib": ["es2020", "dom"],
     "paths": {
-      "@kryshac/forms": ["dist/forms/forms", "dist/forms"],
-      "@kryshac/autocomplete": ["projects/autocomplete/src/public-api.ts"],
-      "@kryshac/selection": ["dist/selection/selection", "dist/selection"]
-    },
+      "@k5cjs/forms": ["dist/forms/forms", "dist/forms"],
+      "@k5cjs/autocomplete": ["projects/autocomplete/src/public-api.ts"],
+      "@k5cjs/selection": ["dist/selection/selection", "dist/selection"],
+      "@k5cjs/rxjs": ["dist/rxjs/rxjs", "dist/rxjs"]
+    }
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
